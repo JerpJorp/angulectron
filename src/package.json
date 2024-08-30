@@ -1,0 +1,9 @@
+{
+  "name": "angulectron",
+  "productName": "Angulectron",
+  "version": "1.0.0",
+  "description": "Angulectron",
+  "main": "electron.prod.js",
+  "license": "MIT",
+  "author": "Kelley Bellard"
+}

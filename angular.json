@@ -20,7 +20,10 @@
             "tsConfig": "tsconfig.app.json",
             "assets": [
               "src/package.json",
-              "src/electron.prod.js",
+              {
+                "glob": "*.js",
+                "input": "electron-js"
+              },
               {
                 "glob": "**/*",
                 "input": "public"

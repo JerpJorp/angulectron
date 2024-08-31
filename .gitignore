@@ -6,6 +6,7 @@
 /out-tsc
 /bazel-out
 /packages
+/electron-js
 
 # Node
 /node_modules

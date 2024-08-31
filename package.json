@@ -2,10 +2,11 @@
   "name": "angulectron",
   "version": "0.0.0",
   "scripts": {
-    "electron": "electron ./src/electron.dev",
+    "electron-compile": "tsc -p tsconfig.electron.json",
+    "electron": "npm run electron-compile && wait-on tcp:4200 && electron ./electron-js/electron.dev",
     "ng": "ng",
     "start": "concurrently \"ng serve\" \"npm run electron\"",
-    "build": "ng build",
+    "build": "npm run electron-compile && ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "package:win": "npm run build && cross-var electron-packager dist/angulectron/browser $npm_package_name-$npm_package_version --out=packages --platform=win32 --arch=all --overwrite ",
@@ -44,6 +45,7 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "typescript": "~5.5.2"
+    "typescript": "~5.5.2",
+    "wait-on": "^8.0.0"
   }
 }

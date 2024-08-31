@@ -8,27 +8,54 @@
     <mat-icon>menu</mat-icon>
   </button>
   <span>{{ title }}</span>
-  <span class="example-spacer"></span>
-  <button
-    mat-icon-button
-    class="example-icon favorite-icon"
-    aria-label="Example icon-button with heart icon"
-  >
-  <mat-icon fontIcon="toggle_on"></mat-icon>
-  </button>
-  <button
-    mat-icon-button
-    class="example-icon"
-    aria-label="Example icon-button with share icon"
-
-  >
-    <mat-icon>share</mat-icon>
-  </button>
 </mat-toolbar>
 <mat-menu #menu="matMenu">
-  <button mat-menu-item><mat-icon>hls_off</mat-icon>Item 1</button>
-  <button mat-menu-item>
-    Item 2</button>
+  <button
+    routerLink="/welcome"
+    routerLinkActive="active"
+    ariaCurrentWhenActive="page"
+    mat-menu-item
+  >
+    <mat-icon>waving_hand</mat-icon>
+    <span>Welcome</span>
+  </button>
+  <button
+    routerLink="/chat"
+    routerLinkActive="active"
+    ariaCurrentWhenActive="page"
+    mat-menu-item
+  >
+    <mat-icon>chat</mat-icon>
+    <span>Chat</span>
+  </button>
+  <button
+    routerLink="/settings"
+    routerLinkActive="active"
+    ariaCurrentWhenActive="page"
+    mat-menu-item
+  >
+    <mat-icon>toggle_on</mat-icon>
+    <span>Settings</span>
+  </button>
+  <button
+    routerLink="/transcription"
+    routerLinkActive="active"
+    ariaCurrentWhenActive="page"
+    mat-menu-item
+  >
+    <mat-icon>record_voice_over</mat-icon>
+    <span>Transcription</span>
+  </button>
+  <button
+    routerLink="/showcase"
+    routerLinkActive="active"
+    ariaCurrentWhenActive="page"
+    mat-menu-item
+  >
+    <mat-icon>theater_comedy</mat-icon>
+    <span>Showcase</span>
+  </button>
+
 </mat-menu>
 
 <router-outlet />

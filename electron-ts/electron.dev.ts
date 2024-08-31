@@ -28,7 +28,7 @@ function createWindow(): BrowserWindow {
     y: 0,
     width: size.width,
     height: size.height,
-    icon: './src/favicon.ico',
+    icon: './public/favicon.ico',
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,

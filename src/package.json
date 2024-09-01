@@ -1,9 +1,14 @@
 {
-  "name": "angulectron",
-  "productName": "Angulectron",
+  "name": "lecture-model",
+  "productName": "Lecture Model",
   "version": "1.0.0",
-  "description": "Angulectron",
+  "description": "Lecture Model",
   "main": "electron.prod.js",
   "license": "MIT",
-  "author": "Kelley Bellard"
+  "author": "Kelley Bellard",
+  "dependencies": {
+    "assemblyai": "^4.7.0",
+    "rxjs": "~7.8.0",
+    "sox": "^0.1.0"
+  }
 }

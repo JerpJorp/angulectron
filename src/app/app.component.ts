@@ -22,10 +22,10 @@ import { MatToolbarModule } from '@angular/material/toolbar';
   styleUrl: './app.component.css'
 })
 export class AppComponent {
-  title = 'angulectron';
+  title = 'Lecture Model';
   constructor(private electronRenderService: ElectronRenderService) {
     this.electronRenderService.Ping().subscribe((x) => {
-      this.title = `Angulectron: ${x}`;
+      console.log(x);
     })
   }
 }

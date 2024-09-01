@@ -1,4 +1,4 @@
-<mat-toolbar>
+<mat-toolbar [color]="'primary'">
   <button
     mat-icon-button
     class="example-icon"
@@ -52,9 +52,20 @@
     ariaCurrentWhenActive="page"
     mat-menu-item
   >
+
     <mat-icon>theater_comedy</mat-icon>
     <span>Showcase</span>
   </button>
+  <button
+    routerLink="/liveSession"
+    routerLinkActive="active"
+    ariaCurrentWhenActive="page"
+    mat-menu-item
+  >
+    <mat-icon>transcribe</mat-icon>
+    <span>Live Transcript</span>
+  </button>
+
 
 </mat-menu>
 

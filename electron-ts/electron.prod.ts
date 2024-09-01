@@ -15,7 +15,7 @@ import { SharedHandler } from './sharedHandler';
 
 let win: BrowserWindow | null = null;
 
-const shared = new SharedHandler();
+const shared = new SharedHandler('prod');
 
 function createWindow(): BrowserWindow {
   const size = screen.getPrimaryDisplay().workAreaSize;
@@ -31,6 +31,7 @@ function createWindow(): BrowserWindow {
       contextIsolation: false,
     },
   });
+  shared.setBrowserWindow(win);
 
   win.loadURL(
     url.format({

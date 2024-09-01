@@ -1,4 +1,4 @@
-# Angulectron
+# lecture-model
 This is my base application template for Angular 18, Electron 32, and Angular/material
 ## Development
 ```bash
@@ -6,7 +6,7 @@ npm start
 ```
 
 ## Code scaffolding
-Run `ng g c component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+Run `ng g c components/omponent-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
 
 ## Build
 Run any of the following to create electron apps packaged for the target platform
@@ -82,8 +82,8 @@ npm install electron-packager cross-var --save-dev
 
 add to package.json -> scripts:
 ```json
-"package:win": "npm run build && cross-var electron-packager dist/angulectron $npm_package_name-$npm_package_version --out=packages --platform=win32 --arch=all --overwrite ",
-"package:linux": "npm run build && cross-var electron-packager dist/angulectron $npm_package_name-$npm_package_version --out=packages --platform=linux --arch=all --overwrite ",
-"package:osx": "npm run build && cross-var electron-packager dist/angulectron $npm_package_name-$npm_package_version --out=packages --platform=darwin --arch=all --overwrite ",
-"package:all": "npm run build && cross-var electron-packager dist/angulectron $npm_package_name-$npm_package_version --out=packages --all --arch=all --overwrite ",
+"package:win": "npm run build && cross-var electron-packager dist/lecture-model $npm_package_name-$npm_package_version --out=packages --platform=win32 --arch=all --overwrite ",
+"package:linux": "npm run build && cross-var electron-packager dist/lecture-model $npm_package_name-$npm_package_version --out=packages --platform=linux --arch=all --overwrite ",
+"package:osx": "npm run build && cross-var electron-packager dist/lecture-model $npm_package_name-$npm_package_version --out=packages --platform=darwin --arch=all --overwrite ",
+"package:all": "npm run build && cross-var electron-packager dist/lecture-model $npm_package_name-$npm_package_version --out=packages --all --arch=all --overwrite ",
 ```

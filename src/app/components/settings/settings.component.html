@@ -1,1 +1,148 @@
-<p>settings works!</p>
+<div class="field">
+  <div class="list">
+    <mat-list role="list">
+      <mat-list-item
+        *ngFor="let cfg of settings()?.AIConfigs; let pi = index"
+        role="listitem"
+      >
+        <button
+          *ngIf="selectedProviderIndex() === pi"
+          class="list-child"
+          mat-stroked-button
+          [matBadge]="
+            cfg.apiKey === undefined || cfg.apiKey.length === 0 ? '*' : ''
+          "
+          (click)="selectedProviderIndex.set(pi)"
+        >
+          {{ cfg.provider }}
+        </button>
+        <button
+          *ngIf="selectedProviderIndex() !== pi"
+          class="list-child"
+          mat-raised-button
+          [matBadge]="
+            cfg.apiKey === undefined || cfg.apiKey.length === 0 ? '*' : ''
+          "
+          (click)="selectedProviderIndex.set(pi)"
+        >
+          {{ cfg.provider }}
+        </button>
+      </mat-list-item>
+      <mat-list-item *ngIf="this.dirty()">
+        <button class="list-child" mat-fab extended (click)="saveChanges()">
+          <mat-icon>save</mat-icon>
+          Save Changes
+        </button>
+      </mat-list-item>
+      <mat-list-item class="list-child">
+        <mat-form-field>
+          <mat-label>Prompt handler</mat-label>
+          <mat-select
+            (ngModelChange)="publishChange()"
+            [(ngModel)]="settings().defaultChatProvider"
+          >
+            <mat-option
+              *ngFor="let Ai of settings().AIConfigs"
+              [value]="Ai.provider"
+              >{{ Ai.provider }}</mat-option
+            >
+          </mat-select>
+        </mat-form-field>
+      </mat-list-item>
+      <mat-list-item class="list-child">
+        <mat-form-field>
+          <mat-label>Live Transcription Handler</mat-label>
+          <mat-select
+            (ngModelChange)="publishChange()"
+            [(ngModel)]="settings().defaultLiveTranscriptionProvider"
+          >
+            <mat-option
+              *ngFor="let Ai of settings().AIConfigs"
+              [value]="Ai.provider"
+              >{{ Ai.provider }}</mat-option
+            >
+          </mat-select>
+        </mat-form-field>
+      </mat-list-item>
+      <mat-list-item class="list-child">
+        <mat-form-field>
+          <mat-label>Recorded Transcription Handler</mat-label>
+          <mat-select
+            (ngModelChange)="publishChange()"
+            [(ngModel)]="settings().defaultTranscribeProvider"
+          >
+            <mat-option
+              *ngFor="let Ai of settings().AIConfigs"
+              [value]="Ai.provider"
+              >{{ Ai.provider }}</mat-option
+            >
+          </mat-select>
+        </mat-form-field>
+      </mat-list-item>
+    </mat-list>
+  </div>
+  <div class="content">
+    <mat-form-field class="width-80">
+      <mat-label>API Key</mat-label>
+      <input
+        [(ngModel)]="selectedProvider().apiKey"
+        (ngModelChange)="publishChange()"
+        matInput
+      />
+    </mat-form-field>
+    <mat-form-field
+      class="width-80"
+      *ngIf="selectedProvider().chatModels.length > 0"
+    >
+      <mat-label>Preferred Model</mat-label>
+      <mat-select
+        (ngModelChange)="publishChange()"
+        [(ngModel)]="selectedProvider().preferredChatModel"
+      >
+        <mat-option
+          *ngFor="let modelName of selectedProvider().chatModels"
+          [value]="modelName"
+          >{{ modelName }}</mat-option
+        >
+      </mat-select>
+    </mat-form-field>
+    <ng-container *ngIf="selectedProvider().chatModels.length > 0">
+      <h4>Available models:</h4>
+      <mat-chip-set aria-label="Model">
+        <mat-chip *ngFor="let m of selectedProvider().chatModels"
+          >{{ m }}
+          <button mat-button (click)="removeModelFromProvider(m)">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
+      </mat-chip-set>
+      <mat-form-field class="width-80">
+        <mat-label>Add Model</mat-label>
+        <input
+          (keydown)="addModelKeyDown($event)"
+          [(ngModel)]="newModel"
+          matInput
+        />
+      </mat-form-field>
+    </ng-container>
+    <mat-list role="list">
+      <mat-list-item
+        *ngIf="selectedProvider().chatModels.length > 0"
+        role="listitem"
+      >
+        {{ selectedProvider().provider }} can be used in this application to
+        analye transcripts to create summaries, study guides, etc. If set as
+        your prefered model, you will need an API key
+      </mat-list-item>
+      <mat-list-item *ngIf="selectedProvider().liveTranscribe" role="listitem">
+        {{ selectedProvider().provider }} can be used for live transcription. To
+        use this feature in the app, you will need an API key.
+      </mat-list-item>
+      <mat-list-item *ngIf="selectedProvider().transcribe" role="listitem">
+        {{ selectedProvider().provider }} can be used for transcriptions of
+        audio recordings. To use this feature in the app, you will need an API
+        key.
+      </mat-list-item>
+    </mat-list>
+  </div>
+</div>

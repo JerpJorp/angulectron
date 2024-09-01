@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "angulectron": {
+    "lecture-model": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/angulectron",
+            "outputPath": "dist/lecture-model",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": ["zone.js"],
@@ -63,10 +63,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "angulectron:build:production"
+              "buildTarget": "lecture-model:build:production"
             },
             "development": {
-              "buildTarget": "angulectron:build:development"
+              "buildTarget": "lecture-model:build:development"
             }
           },
           "defaultConfiguration": "development"

@@ -4,7 +4,7 @@ import { SettingsComponent } from './components/settings/settings.component';
 import { TranscriptionComponent } from './components/transcription/transcription.component';
 import { ChatComponent } from './components/chat/chat.component';
 import { MaterialShowcaseComponent } from './components/material-showcase/material-showcase.component';
-import { LiveTranscriptSessionComponent } from './components/live-transcript-session/live-transcript-session.component';
+import { TranscriptSessionComponent } from './components/live-transcript-session/transcript-session.component';
 
 export const routes: Routes = [
     { path: 'welcome', component: WelcomeComponent },
@@ -12,5 +12,5 @@ export const routes: Routes = [
     { path: 'transcription', component: TranscriptionComponent },
     { path: 'chat', component: ChatComponent },
     { path: 'showcase', component: MaterialShowcaseComponent },
-    { path: 'liveSession', component: LiveTranscriptSessionComponent }
+    { path: 'transcriptSession', component: TranscriptSessionComponent }
 ];

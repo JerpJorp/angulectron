@@ -7,7 +7,10 @@
   "license": "MIT",
   "author": "Kelley Bellard",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.27.1",
     "assemblyai": "^4.7.0",
+    "groq-sdk": "^0.6.1",
+    "openai": "^4.57.0",
     "rxjs": "~7.8.0",
     "sox": "^0.1.0"
   }

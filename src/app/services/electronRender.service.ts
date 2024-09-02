@@ -5,9 +5,11 @@ import { Injectable } from '@angular/core';
 import { IpcRenderer, ipcRenderer, webFrame } from 'electron';
 import * as childProcess from 'child_process';
 import * as fs from 'fs';
-import { from, Observable, Subject } from 'rxjs';
-import { IFileInfo } from '../../../electron-ts/IFileInfo';
-import { ISettings } from '../../../electron-ts/Utilities';
+import { from, map, Observable, Subject, switchMap } from 'rxjs';
+import { IFileInfo } from '../../../electron-ts/file-info';
+import { IAIConfig, ISettings, Utilities } from '../../../electron-ts/utility-classes';
+import { TranscriptInstance } from '../classes/transcript-instance';
+import { IChatServiceResponse, IGenericMessage } from '../../../electron-ts/model-engine';
 
 @Injectable({
   providedIn: 'root',
@@ -20,7 +22,8 @@ export class ElectronRenderService {
 
   partialTranscript$ = new Subject<string[]>();
   finalTranscript$ = new Subject<string[]>();
-  streamingLog$ = new Subject<string>();
+  sessionLog$ = new Subject<string>();
+  sessionError$ = new Subject<string>();
 
   constructor() {
     // Conditional imports
@@ -43,7 +46,8 @@ export class ElectronRenderService {
 
       this.ipcRenderer.on('partial-transcript', (undefined, value: string[]) => this.partialTranscript$.next(value));
       this.ipcRenderer.on('final-transcript', (undefined, value: string[]) => this.finalTranscript$.next(value));
-      this.ipcRenderer.on('streaming-log', (undefined, value: string) => this.streamingLog$.next(value));
+      this.ipcRenderer.on('session-log', (undefined, value: string) => this.sessionLog$.next(value));
+      this.ipcRenderer.on('session-error', (undefined, value: string) => this.sessionError$.next(value));
 
       // Notes :
       // * A NodeJS's dependency imported with 'window.require' MUST BE present in `dependencies` of both `app/package.json`
@@ -59,6 +63,31 @@ export class ElectronRenderService {
     }
   }
 
+
+  Transcribe(audioFilePath: string): Observable<IChatServiceResponse> {
+    return from(this.ipcRenderer.invoke('transcribe', audioFilePath));
+  }
+
+  Interaction(systemMessage: string, humanMessage: string): Observable<IChatServiceResponse> {
+    return from(this.ipcRenderer.invoke('interaction-request', systemMessage, humanMessage));
+  }
+
+  LLMRequest(messageStack: IGenericMessage[], llm?: IAIConfig, model?: string): Observable<IChatServiceResponse> {
+    return from(this.ipcRenderer.invoke('llm-request', messageStack, llm, model));
+  }
+
+  GetInstances(): Observable<TranscriptInstance[]> {
+    const return$ = this.StoreGetFileInfo(Utilities.INSTANCE_CONFIG).pipe(map((x) => {
+      const instances = Object.values(x.info.data) as TranscriptInstance[];
+      return instances;
+    }));
+    return return$;
+  }
+
+  SaveInstance(instance: TranscriptInstance): Observable<void> {
+    return  this.StoreSet(Utilities.INSTANCE_CONFIG, instance.id, instance)
+  }
+
   SaveAudio(arrayBuffer: ArrayBuffer): Observable<string> {
     return from(this.ipcRenderer.invoke('save-audio', arrayBuffer));
 
@@ -67,9 +96,9 @@ export class ElectronRenderService {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return from(this.ipcRenderer.invoke('store-keys', store));
   }
-  StoreGetFileInfo(store: string, key: string): Observable<IFileInfo> {
+  StoreGetFileInfo(store: string): Observable<{ path: string; info: IFileInfo }> {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return from(this.ipcRenderer.invoke('store-fileinfo', store, key));
+    return from(this.ipcRenderer.invoke('store-fileinfo', store));
   }
   StoreDataPath(): Observable<string> {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return

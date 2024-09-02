@@ -1,24 +1,34 @@
 import { ipcMain, BrowserWindow } from 'electron';
-import StreamingTranscriptService from './StreamingTranscriptService';
-import { ISettings } from './Utilities';
-import SimpleElectronStore from './SimpleElectronStore';
+import StreamingTranscriptService from './streaming-transcript-service';
+import { ISettings } from './utility-classes';
+import SimpleElectronStore from './simple-electron-store';
+import { Subject } from 'rxjs';
 
 export class LiveTranscriptionHander {
   streamingSvc: StreamingTranscriptService;
+
+  log$ = new Subject<{
+    level: 'trace' | 'info' | 'important';
+    message: string;
+  }>();
+  error$ = new Subject<string>();
 
   fullContent: string[] = [];
   constructor(
     public binDir: string,
     public mainWindow: BrowserWindow,
-    settings: ISettings,
-    public dataStore: SimpleElectronStore,
+    public getSettings: () => ISettings,
   ) {
-    this.streamingSvc = new StreamingTranscriptService(this.binDir, settings);
+    this.streamingSvc = new StreamingTranscriptService(this.binDir);
 
-    this.streamingSvc.debug$.subscribe((msg) => {
-      this.mainWindow.webContents.send('streaming-log', msg)
-      dataStore.sessionLog([msg]);
+    this.streamingSvc.log$.subscribe((msg) =>  {
+      this.log$.next({
+        level: msg.level,
+        message: `Streaming: ${msg.message}`
+      });
+
     });
+    this.streamingSvc.error$.subscribe((msg) =>  this.error$.next(`streaming: ${msg}`));
 
     this.streamingSvc.partialTranscript$.subscribe((partialTranscript) => {
       this.mainWindow.webContents.send('partial-transcript', [this.fullContent, partialTranscript]);
@@ -39,11 +49,11 @@ export class LiveTranscriptionHander {
 
     ipcMain.handle('stream-start', async (): Promise<string> => {
       this.fullContent = [];
-      this.dataStore.sessionLog(['streamingSvc.start()']);
-      return this.streamingSvc.start();
+      this.log$.next({level: 'important', message: 'streamingSvc.start()'});
+      return this.streamingSvc.start(this.getSettings());
     });
     ipcMain.handle('stream-stop', async (): Promise<string> => {
-      this.dataStore.sessionLog(['streamingSvc.stop()']);
+      this.log$.next({level: 'important', message: 'streamingSvc.stop()'});
       return this.streamingSvc.stop();
     });
   }

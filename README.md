@@ -1,5 +1,6 @@
 # lecture-model
 This is my base application template for Angular 18, Electron 32, and Angular/material
+
 ## Development
 ```bash
 npm start
@@ -7,6 +8,17 @@ npm start
 
 ## Code scaffolding
 Run `ng g c components/omponent-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+
+## Adding npm dependencies
+
+For Angular dependencies, using the regular npm command line is fine.  For node (backend electron dependencies), using regular npm command line to install will 
+work fine for development, but will fail when packaged.  This is because electron packager expects the electron node dependencies to be in a node_modules
+directory where the package is built from, which is the ./dist\lecture-model\browser directory created by the Angular build process.  
+
+In order to get these dependencies included,
+* Add them to src\package.json as they are in package.json
+* src\package.json is copied to dist\lecture-model\browser\package.json as part of the Angular build process (Angular.json assets)
+* npm run build includes `cd dist/lecture-model/browser && npm install`, installing those dependencies listed in src/package.json in the right place
 
 ## Build
 Run any of the following to create electron apps packaged for the target platform
@@ -35,8 +47,8 @@ C:\Users\user\AppData\Roaming\npm
 https://pkief.medium.com/angular-desktop-apps-a9ce9e3574e8 as loose reference
 Create initial angular app and set up @angular/material
 ```bash
-ng new angulectron
-cd angulectron
+ng new lecture-model
+cd lecture-model
 ng add @angular/material
 : ' chosen options:
    ❯ Cyan/Orange        [Preview: https://material.angular.io?theme=cyan-orange]

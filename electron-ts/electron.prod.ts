@@ -1,7 +1,7 @@
 import { app, BrowserWindow, screen } from 'electron';
 import * as url from 'url';
 import * as path from 'path';
-import { SharedHandler } from './sharedHandler';
+import { SharedHandler } from './shared-handler';
 
 // TODO: Implement SimpleElectronStore for data storage
 // const dataStore = new SimpleElectronStore();

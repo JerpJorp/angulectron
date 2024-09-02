@@ -9,9 +9,7 @@
           *ngIf="selectedProviderIndex() === pi"
           class="list-child"
           mat-stroked-button
-          [matBadge]="
-            cfg.apiKey === undefined || cfg.apiKey.length === 0 ? '*' : ''
-          "
+          [matBadge]="cfg.apiKey === undefined || cfg.apiKey.length === 0 ? '*' : ''"
           (click)="selectedProviderIndex.set(pi)"
         >
           {{ cfg.provider }}
@@ -34,9 +32,12 @@
           Save Changes
         </button>
       </mat-list-item>
-      <mat-list-item class="list-child">
+    </mat-list>
+    <mat-card style="padding: 30px" appearance="outlined">
+      <mat-card-title style="margin-bottom: 35px;">Preffered settings</mat-card-title>
+      <mat-card-content>
         <mat-form-field>
-          <mat-label>Prompt handler</mat-label>
+          <mat-label>Prompt Handler</mat-label>
           <mat-select
             (ngModelChange)="publishChange()"
             [(ngModel)]="settings().defaultChatProvider"
@@ -48,8 +49,7 @@
             >
           </mat-select>
         </mat-form-field>
-      </mat-list-item>
-      <mat-list-item class="list-child">
+
         <mat-form-field>
           <mat-label>Live Transcription Handler</mat-label>
           <mat-select
@@ -63,8 +63,7 @@
             >
           </mat-select>
         </mat-form-field>
-      </mat-list-item>
-      <mat-list-item class="list-child">
+
         <mat-form-field>
           <mat-label>Recorded Transcription Handler</mat-label>
           <mat-select
@@ -78,8 +77,8 @@
             >
           </mat-select>
         </mat-form-field>
-      </mat-list-item>
-    </mat-list>
+      </mat-card-content>
+    </mat-card>
   </div>
   <div class="content">
     <mat-form-field class="width-80">

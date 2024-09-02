@@ -13,9 +13,25 @@ export class Utilities {
     ];
   }
 
-  static STORE_CONFIG = 'LectureModel.Store';
+  static formattedNow(): string {
+    const now = new Date();
 
+    const padStart = (value: number) => value.toString().padStart(2, '0');
+
+    return (
+      `${now.getFullYear()}${padStart(now.getMonth())}${padStart(now.getDate())}_` +
+      `${padStart(now.getHours())}${padStart(now.getMinutes())}${padStart(now.getSeconds())}_` +
+      `${now.getMilliseconds()}`
+    );
+  }
+
+  static STORE_CONFIG = 'LectureModel.Store';
+  static INSTANCE_CONFIG = 'LectureModel.Instances';
+
+  static GROQ = 'Groq';
   static ASSEMBLYAI = 'AssemblyAI';
+  static ANTHROPIC = 'Anthropic';
+  static OPENAI = 'OpenAI'
   static DefaultSettings(): ISettings {
     return {
       defaultChatProvider: 'OpenAI',
@@ -38,7 +54,7 @@ export class Utilities {
       ],
       AIConfigs: [
         {
-          provider: 'OpenAI',
+          provider: this.OPENAI,
           apiKey: '',
           chatModels: [
             'gpt-4o',
@@ -51,7 +67,7 @@ export class Utilities {
           liveTranscribe: false,
         },
         {
-          provider: 'Anthropic',
+          provider: this.ANTHROPIC,
           apiKey: '',
           chatModels: [
             'claude-3-5-sonnet-20240620',
@@ -64,7 +80,7 @@ export class Utilities {
           liveTranscribe: false,
         },
         {
-          provider: 'AssmblyAI',
+          provider: this.ASSEMBLYAI,
           apiKey: '',
           chatModels: [],
           preferredChatModel: '',
@@ -78,13 +94,13 @@ export class Utilities {
             'meta-llama/Meta-Llama-3.1-405B-Instruct',
             'meta-llama/Meta-Llama-3.1-70B-Instruct',
           ],
-          opnAiBaseURL: 'https://api.deepinfra.com/v1/openai',
+          openAiBaseURL: 'https://api.deepinfra.com/v1/openai',
           preferredChatModel: 'meta-llama/Meta-Llama-3.1-405B-Instruct',
           transcribe: false,
           liveTranscribe: false,
         },
         {
-          provider: 'Groq',
+          provider: this.GROQ,
           apiKey: '',
           chatModels: [],
           preferredChatModel: '',
@@ -108,7 +124,7 @@ export interface ISettings {
 export interface IAIConfig {
   provider: string;
   apiKey: string;
-  opnAiBaseURL?: string;
+  openAiBaseURL?: string;
   chatModels: string[];
   preferredChatModel: string;
   liveTranscribe: boolean;

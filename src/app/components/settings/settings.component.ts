@@ -1,6 +1,6 @@
 import { Component, computed, Signal, signal, ViewChild } from '@angular/core';
 import { ElectronRenderService } from '../../services/electronRender.service';
-import { IAIConfig, ISettings } from '../../../../electron-ts/Utilities';
+import { IAIConfig, ISettings } from '../../../../electron-ts/utility-classes';
 import { NgClass, NgFor, NgIf } from '@angular/common';
 import {MatListModule} from '@angular/material/list';
 import {MatButtonModule} from '@angular/material/button';
@@ -11,6 +11,8 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatChipsModule} from '@angular/material/chips';
 import { FormsModule } from '@angular/forms';
 import {MatIconModule} from '@angular/material/icon';
+import {MatDividerModule} from '@angular/material/divider';
+import { MatCardModule } from '@angular/material/card';
 @Component({
   selector: 'app-settings',
   standalone: true,
@@ -23,6 +25,8 @@ import {MatIconModule} from '@angular/material/icon';
     MatFormFieldModule,
     MatChipsModule,
     MatIconModule,
+    MatDividerModule,
+    MatCardModule,
     NgFor,
     NgIf,
     NgClass,
@@ -58,6 +62,7 @@ export class SettingsComponent {
     const s = this.settings();
     if (s) {
       this.electronRenderService.SaveSettings(s);
+      this.dirty.set(false);
     }
 
   }

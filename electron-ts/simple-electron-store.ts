@@ -1,7 +1,8 @@
 import { app } from 'electron';
 import * as fs from 'fs';
-import Shared from './shared';
-import { IFileInfo } from './IFileInfo';
+import { IFileInfo } from './file-info';
+import { Utilities } from './utility-classes';
+
 
 class SimpleElectronStore {
   userDataPath: string;
@@ -12,7 +13,7 @@ class SimpleElectronStore {
 
   constructor() {
     this.userDataPath = app.getPath('userData'); // or path.resolve('.');
-    this.sessionFilePath = `${this.userDataPath}/${Shared.formattedNow()}.txt`;
+    this.sessionFilePath = `${this.userDataPath}/${Utilities.formattedNow()}.txt`;
   }
 
   public getFileInfo(store: string): { path: string; info: IFileInfo } {
@@ -56,7 +57,7 @@ class SimpleElectronStore {
 
   sessionLog(messages: string[]) {
     try {
-      messages.forEach((msg) => fs.appendFileSync(this.sessionFilePath, msg));
+      messages.forEach((msg) => fs.appendFileSync(this.sessionFilePath, `${msg}\n`));
     } catch (error) {
       // If file read or parse fails, start with an empty object
       console.warn('Could not append to session log file ', error);

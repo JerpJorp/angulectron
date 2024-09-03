@@ -1,7 +1,6 @@
 import { Utilities } from "../../../electron-ts/utility-classes";
 
 export class TranscriptInstance {
-  
   id = Utilities.formattedNow();
   transcript = '' ;
   note = '';

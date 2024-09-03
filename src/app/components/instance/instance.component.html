@@ -53,7 +53,10 @@
   <mat-button-toggle
     [value]="interaction.name"
     *ngFor="let interaction of settings.interactions"
-    >{{ interaction.name }}</mat-button-toggle
+    >
+    {{ interaction.name }}
+    @if (interactions[interaction.name] === undefined ||  interactions[interaction.name].length === 0) { {{ ' *' }} }
+    </mat-button-toggle
   >
   <mat-button-toggle value="raw">Raw</mat-button-toggle>
 </mat-button-toggle-group>

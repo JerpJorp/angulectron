@@ -25,17 +25,12 @@ export class SharedHandler {
     ipcMain.handle('file-exists', (undefined, filePath: string) => fs.existsSync(filePath) );
     ipcMain.handle('glob', () => fs.readdirSync('.'));
     ipcMain.handle('get-settings', () => this.getSettings());
-    ipcMain.handle('assets-dir', () => this.assetsDir());
     ipcMain.handle('save-settings', (undefined, settings: ISettings) => this.dataStore.set(Utilities.STORE_CONFIG, 'Providers', settings));
     ipcMain.handle('open-file', (undefined, filePath: string) =>  shell.openPath(filePath));
   }
 
   binDir(): string {
     return this.environment === 'dev' ? `public\\bin` : `resources\\app\\bin`;
-  }
-
-  assetsDir(): string {
-    return this.environment === 'dev' ? `public` : `resources/app`;
   }
 
   binPath(exeName: string): string {
@@ -59,7 +54,7 @@ export class SharedHandler {
       () => this.getSettings()
     );
 
-    this.modelEngine = new ModelEngine(() => this.getSettings());
+    this.modelEngine = new ModelEngine(win, () => this.getSettings());
 
     this.liveTranscriptHandler.error$.subscribe(x => this.error(x));
     this.liveTranscriptHandler.log$.subscribe(x => this.log(x));
@@ -74,8 +69,12 @@ export class SharedHandler {
   }) {
     if (this.win) {
       this.win.webContents.send('session-log', msg);
-      if (msg.level === 'important') {
+      if (msg.level !== 'trace') {
         this.dataStore.sessionLog([msg.message])
+      }
+    } else {
+      if (msg.level !== 'trace') {
+        this.dataStore.sessionLog([`Not sent to client: ${msg.message}`])
       }
     }
   }

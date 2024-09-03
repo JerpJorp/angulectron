@@ -5,7 +5,7 @@ import { Injectable } from '@angular/core';
 import { IpcRenderer, ipcRenderer, webFrame } from 'electron';
 import * as childProcess from 'child_process';
 import * as fs from 'fs';
-import { from, map, Observable, Subject, switchMap } from 'rxjs';
+import { from, map, Observable, Subject, switchMap, tap } from 'rxjs';
 import { IFileInfo } from '../../../electron-ts/file-info';
 import { IAIConfig, ISettings, Utilities } from '../../../electron-ts/utility-classes';
 import { TranscriptInstance } from '../classes/transcript-instance';
@@ -20,6 +20,7 @@ export class ElectronRenderService {
   childProcess!: typeof childProcess;
   fs!: typeof fs;
 
+  pendingRequests$ = new Subject<string[]>();
   partialTranscript$ = new Subject<string[]>();
   finalTranscript$ = new Subject<string[]>();
   sessionLog$ = new Subject<{
@@ -47,13 +48,22 @@ export class ElectronRenderService {
         console.log(`stdout:\n${stdout}`);
       });
 
+      this.ipcRenderer.on('pending-requests', (undefined, requests: string[]) => this.pendingRequests$.next(requests));
       this.ipcRenderer.on('partial-transcript', (undefined, value: string[]) => this.partialTranscript$.next(value));
       this.ipcRenderer.on('final-transcript', (undefined, value: string[]) => this.finalTranscript$.next(value));
-      this.ipcRenderer.on('session-log', (undefined, value: {
+      this.ipcRenderer.on('session-log', (undefined, log: {
           level: 'trace' | 'info' | 'important';
           message: string;
-        }) => this.sessionLog$.next(value));
-      this.ipcRenderer.on('session-error', (undefined, value: string) => this.sessionError$.next(value));
+        }) => {
+          if (log.level != 'trace') {
+            console.log(`session log: ${JSON.stringify(log)}`);
+          }
+          this.sessionLog$.next(log);
+        });
+      this.ipcRenderer.on('session-error', (undefined, err: string) => {
+        console.warn(`session error: ${err}`);
+        this.sessionError$.next(err);
+      });
 
       // Notes :
       // * A NodeJS's dependency imported with 'window.require' MUST BE present in `dependencies` of both `app/package.json`
@@ -71,16 +81,54 @@ export class ElectronRenderService {
 
 
 
-  Transcribe(audioFilePath: string): Observable<IChatServiceResponse> {
-    return from(this.ipcRenderer.invoke('transcribe', audioFilePath));
+  Transcribe(instance: TranscriptInstance, audioFilePath: string): Observable<IChatServiceResponse> {
+    return from(this.ipcRenderer.invoke('transcribe', audioFilePath)).pipe(tap((response) => {
+      if (response.error) {
+        return;
+      }
+      if (instance.transcript && instance.transcript.length > 0) {
+        if (instance.history === undefined) {
+          instance.history = [];
+        }
+        instance.history.push({
+          message: `new transcript.  Old value`,
+          value: instance.transcript,
+        })
+      }
+      instance.transcript = response.text;
+    }))
   }
 
-  Interaction(systemMessage: string, humanMessage: string): Observable<IChatServiceResponse> {
-    return from(this.ipcRenderer.invoke('interaction-request', systemMessage, humanMessage));
+  Interaction(instance: TranscriptInstance, name: string, systemMessage: string, humanMessage: string): Observable<IChatServiceResponse> {
+    return from(this.ipcRenderer.invoke('interaction-request', systemMessage, humanMessage)).pipe(tap((response) => {
+        if (response.error)  {
+          return;
+        }
+        let interaction = instance.interactions.find((x) => x.name === name);
+        if (interaction ) {
+          if (interaction.value && interaction.value.length > 0) {
+            if (instance.history === undefined) {
+              instance.history = [];
+            }
+            instance.history.push({
+              message: `new reqsponse for ${name}.  Old value`,
+              value: interaction.value,
+            })
+          }
+        } else {
+          interaction = {name: name, value: ''};
+          instance.interactions.push(interaction);
+        }
+        interaction.value = response.text;
+    }));
   }
 
   LLMRequest(messageStack: IGenericMessage[], llm?: IAIConfig, model?: string): Observable<IChatServiceResponse> {
     return from(this.ipcRenderer.invoke('llm-request', messageStack, llm, model));
+  }
+
+  GetInstance(instance: TranscriptInstance): Observable<TranscriptInstance | undefined> {
+    return this.StoreGet(Utilities.INSTANCE_CONFIG, instance.id);
   }
 
   GetInstances(): Observable<TranscriptInstance[]> {
@@ -116,7 +164,7 @@ export class ElectronRenderService {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return from(this.ipcRenderer.invoke('data-path'));
   }
-  StoreGet(store: string, key: string): Observable<string> {
+  StoreGet(store: string, key: string): Observable<any> {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return from(this.ipcRenderer.invoke('store-get', store, key));
   }
@@ -159,10 +207,6 @@ export class ElectronRenderService {
 
   StreamStop(): Observable<void> {
     return from(this.ipcRenderer.invoke('stream-stop'));
-  }
-
-  AssetsDir(): Observable<string> {
-    return from(this.ipcRenderer.invoke('assets-dir'));
   }
 
   get isElectron(): boolean {

@@ -2,61 +2,6 @@
   <div class="list">
     <mat-card style="padding: 20px" appearance="outlined">
 
-      <mat-card-title>Record and transcribe</mat-card-title>
-      <mat-card-content>
-        <div class="list">
-          <mat-list role="list">
-            <mat-list-item>
-              <button
-                [disabled]="recordingState() === 'start'"
-                class="list-child"
-                mat-button
-                (click)="startBoth()">
-                Start
-              </button>
-            </mat-list-item>
-            <mat-list-item>
-              <button
-                [disabled]="recordingState() !== 'start'"
-                class="list-child"
-                mat-button
-                (click)="stopBoth()"
-              >
-                Stop
-              </button>
-            </mat-list-item>
-            <mat-list-item>
-              <button
-                [disabled]="recordingState() !== 'start'"
-                class="list-child"
-                mat-button
-                (click)="cancelBoth()"
-              >
-                Cancel
-              </button>
-            </mat-list-item>
-          </mat-list>
-        </div>
-      </mat-card-content>
-
-      <mat-card-title>Live Transcript</mat-card-title>
-      <mat-card-content>
-        <div class="list">
-          <mat-list role="list">
-            <mat-list-item>
-              <button class="list-child" mat-button (click)="startSreaming()">
-                Start
-              </button>
-            </mat-list-item>
-            <mat-list-item>
-              <button class="list-child" mat-button (click)="stopStreaming()">
-                Stop
-              </button>
-            </mat-list-item>
-          </mat-list>
-        </div>
-      </mat-card-content>
-
       <mat-card-title>Record Audio</mat-card-title>
       <mat-card-content>
         <div class="list">
@@ -95,25 +40,86 @@
         </div>
       </mat-card-content>
 
+      <mat-card-title>Record & transcribe</mat-card-title>
+      <mat-card-content>
+        <div class="list">
+          <mat-list role="list">
+            <mat-list-item>
+              <button
+                [disabled]="recordingState() === 'start'"
+                class="list-child"
+                mat-button
+                (click)="startBoth()">
+                Start
+              </button>
+            </mat-list-item>
+            <mat-list-item>
+              <button
+                [disabled]="recordingState() !== 'start'"
+                class="list-child"
+                mat-button
+                (click)="stopBoth()"
+              >
+                Stop
+              </button>
+            </mat-list-item>
+            <mat-list-item>
+              <button
+                [disabled]="recordingState() !== 'start'"
+                class="list-child"
+                mat-button
+                (click)="cancelBoth()"
+              >
+                Cancel
+              </button>
+            </mat-list-item>
+          </mat-list>
+        </div>
+      </mat-card-content>
+
+      <mat-card-title>Transcribe only</mat-card-title>
+      <mat-card-content>
+        <div class="list">
+          <mat-list role="list">
+            <mat-list-item>
+              <button class="list-child" mat-button (click)="startSreaming()">
+                Start
+              </button>
+            </mat-list-item>
+            <mat-list-item>
+              <button class="list-child" mat-button (click)="stopStreaming()">
+                Stop
+              </button>
+            </mat-list-item>
+          </mat-list>
+        </div>
+      </mat-card-content>
+
     </mat-card>
   </div>
   <div class="content">
     <ng-container *ngIf="transcriptInstance() !== undefined">
       <mat-form-field class="w-95">
         <mat-label>Name</mat-label>
-        <input [(ngModel)]="transcriptInstance()!.name" (ngModelChange)="publishChanges()" matInput />
+        <input
+          placeholder="Name this something relevant to the class/lecture/meeting you are recording. This is how you will see it in the list of sessions later, so give it a good, distinctive name."
+          [(ngModel)]="transcriptInstance()!.name" (ngModelChange)="publishChanges()" matInput />
       </mat-form-field>
       <mat-form-field class="w-95">
         <mat-label>Date</mat-label>
-        <input [(ngModel)]="transcriptInstance()!.date" (ngModelChange)="publishChanges()" matInput />
+        <input readonly [(ngModel)]="transcriptInstance()!.date" (ngModelChange)="publishChanges()" matInput />
       </mat-form-field>
       <mat-form-field class="w-95">
         <mat-label>File</mat-label>
-        <input readonly [(ngModel)]="transcriptInstance()!.file" (ngModelChange)="publishChanges()" matInput />
+        <input
+          placeholder="read-only: will be filled in if you are recording audio when you stop"
+          readonly [(ngModel)]="transcriptInstance()!.file" (ngModelChange)="publishChanges()" matInput />
       </mat-form-field>
       <mat-form-field class="w-95">
         <mat-label>Note</mat-label>
-        <textarea [(ngModel)]="transcriptInstance()!.note" (ngModelChange)="publishChanges()" matInput ></textarea>
+        <textarea
+          placeholder="Add whatever notes you want while you are recording..."
+          [(ngModel)]="transcriptInstance()!.note" (ngModelChange)="publishChanges()" matInput ></textarea>
       </mat-form-field>
       <mat-form-field *ngIf="!inSession()" class="w-95">
         <mat-label>Transcript</mat-label>

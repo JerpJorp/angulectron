@@ -96,6 +96,7 @@ export class Utilities {
           ],
           openAiBaseURL: 'https://api.deepinfra.com/v1/openai',
           preferredChatModel: 'meta-llama/Meta-Llama-3.1-405B-Instruct',
+          maxTokens: 100000,
           transcribe: false,
           liveTranscribe: false,
         },
@@ -124,6 +125,7 @@ export interface ISettings {
 export interface IAIConfig {
   provider: string;
   apiKey: string;
+  maxTokens?: number;
   openAiBaseURL?: string;
   chatModels: string[];
   preferredChatModel: string;

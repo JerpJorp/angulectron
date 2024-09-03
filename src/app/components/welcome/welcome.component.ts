@@ -10,13 +10,4 @@ import { NgIf } from '@angular/common';
   templateUrl: './welcome.component.html',
   styleUrl: './welcome.component.css'
 })
-export class WelcomeComponent {
-
-    mardownSrc = signal<string | undefined>(undefined);
-
-    constructor(private electronRenderService: ElectronRenderService) {
-      this.electronRenderService.AssetsDir().subscribe((assetsDir) => {
-        this.mardownSrc.set(`${assetsDir}/welcome.md`)
-      })
-    }
-}
+export class WelcomeComponent { }

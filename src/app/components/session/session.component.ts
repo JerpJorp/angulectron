@@ -52,15 +52,6 @@ export class SessionComponent {
     this.electronRenderService.finalTranscript$.subscribe((textList) =>
       this.transcriptArray.set(textList)
     );
-    this.electronRenderService.sessionLog$.subscribe((log) => {
-      if (log.level != 'trace') {
-        console.log(`session log: ${log}`);
-      }
-    });
-    this.electronRenderService.sessionError$.subscribe((err) => {
-      console.warn(`session error: ${err}`);
-      this.openSnackBar(err, 'OK');
-    });
   }
 
   openSnackBar(message: string, action: string) {
@@ -98,10 +89,7 @@ export class SessionComponent {
       console.log('stream cancel');
       this.endSession();
     });
-
-    const instance = this.transcriptInstance() || TranscriptInstance.Factory();
-    instance.transcript = this.transcript();
-    this.transcriptInstance.set(instance);
+    this.transcriptInstance.set(undefined);
   }
 
   stopRecording() {
@@ -118,6 +106,7 @@ export class SessionComponent {
     if (this.recorder) {
       this.recorder.stop();
     }
+    this.transcriptInstance.set(undefined);
   }
 
   async startBoth() {

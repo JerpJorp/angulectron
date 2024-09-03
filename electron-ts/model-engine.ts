@@ -5,7 +5,7 @@ import Groq from 'groq-sdk';
 import Anthropic from '@anthropic-ai/sdk';
 
 import * as fs from 'fs';
-import { ipcMain } from "electron";
+import { BrowserWindow, ipcMain } from "electron";
 
 export interface IChatServiceResponse {
   status: 'SUCCESS' | 'FAILURE';
@@ -29,7 +29,13 @@ export class ModelEngine {
   }>();
   error$ = new Subject<string>();
 
-  constructor(public getSettings: () => ISettings) {
+  pendingRequests: {id: string, message: string}[] = [];
+
+
+  constructor(
+    public mainWindow: BrowserWindow,
+    public getSettings: () => ISettings) {
+
     ipcMain.handle('transcribe', async (undefined, audioFilePath: string): Promise<IChatServiceResponse> => this.transcribe(audioFilePath));
     ipcMain.handle(
       'interaction-request',
@@ -41,7 +47,23 @@ export class ModelEngine {
           this.llmRequest(messageStack));
   }
 
-  transcribe(audioFilePath: string): Promise<IChatServiceResponse> {
+  addPendingRequest(id: string, message: string) {
+    this.pendingRequests.push({ id, message });
+    this.sendPending();
+  }
+
+  removePendingRequest(id: string) {
+    this.pendingRequests = this.pendingRequests.filter(x => x.id !== id);
+    this.sendPending();
+  }
+
+  sendPending() {
+    this.mainWindow.webContents.send('pending-requests', this.pendingRequests.map(x => x.message));
+  }
+
+  async transcribe(audioFilePath: string): Promise<IChatServiceResponse> {
+    const id = Utilities.formattedNow();
+    this.addPendingRequest(id, 'Transcribe Request');
     try {
       const settings = this.getSettings()
       const provider = settings.defaultTranscribeProvider;
@@ -51,20 +73,19 @@ export class ModelEngine {
           llm = settings.AIConfigs.find((llm) => llm.transcribe && this.valid(llm) )
       }
       if (this.valid(llm)) {
-          if (llm!.provider == Utilities.OPENAI) {
-            return this.openAiTranscribe(audioFilePath, llm!.apiKey);
-          } else if (llm!.provider === Utilities.GROQ) {
-            return this.groqTranscribe(audioFilePath, llm!.apiKey);
-          }
+        const reply = llm!.provider == Utilities.OPENAI ?
+          await this.openAiTranscribe(audioFilePath, llm!.apiKey) :
+          await this.groqTranscribe(audioFilePath, llm!.apiKey);
+        return reply;
+      } else {
+        return ModelEngine.err('Cannot transcribe: invalid transcription AI provider');
       }
     } catch (error) {
       this.error$.next(`${error}`);
-      return new Promise((resolve) => ModelEngine.err(error));
+      return ModelEngine.err(error);
+    } finally {
+      this.removePendingRequest(id);
     }
-
-    const message = 'Unable to transcribe audio.  No LLM configured to perform audio transcription exists with an API key';
-    this.error$.next(message);
-    return new Promise((resolve) => ModelEngine.err(new Error(message)));
   }
 
   async openAiTranscribe(audioFile: string, apiKey: string): Promise<IChatServiceResponse> {
@@ -111,19 +132,19 @@ export class ModelEngine {
     return this.llmRequest(messageStack);
 }
 
-  async llmRequest(messageStack: IGenericMessage[], llm?: IAIConfig, model?: string ): Promise<IChatServiceResponse> {
+  async llmRequest(messageStack: IGenericMessage[], maybeLlm?: IAIConfig, model?: string ): Promise<IChatServiceResponse> {
 
     this.log$.next(
       {
-        level: 'info',
-        message: `llmRequest: LLM=${llm?.provider} MODEL=${model} STACKSIZE=${messageStack.length}`,
+        level: 'important',
+        message: `llmRequest: LLM=${maybeLlm?.provider} MODEL=${model} STACKSIZE=${messageStack.length}`,
       });
 
     try {
       const settings = this.getSettings()
       const provider = settings.defaultChatProvider;
 
-      let llmToUse = llm || settings.AIConfigs.find((llm) => llm.provider === provider);
+      let llmToUse = maybeLlm || settings.AIConfigs.find((llm) => llm.provider === provider);
 
       if (!this.valid(llmToUse)) {
         llmToUse = settings.AIConfigs.find((llm) => llm.chatModels.length > 0 && this.valid(llm) )
@@ -137,14 +158,14 @@ export class ModelEngine {
             });
           if (llmToUse!.provider == Utilities.ANTHROPIC) {
             if (modelToUse !== undefined) {
-              const response = await this.anthropicRequest(messageStack, llm!, modelToUse);
+              const response = await this.anthropicRequest(messageStack, llmToUse!, modelToUse);
               return response;
             }
 
-          } else if (llm!.provider === Utilities.OPENAI || llm!.openAiBaseURL !== undefined) {
+          } else if (llmToUse!.provider === Utilities.OPENAI || llmToUse!.openAiBaseURL !== undefined) {
 
             if (modelToUse !== undefined) {
-              const response = this.openAiRequest(messageStack, llm!, modelToUse);
+              const response = this.openAiRequest(messageStack, llmToUse!, modelToUse);
               return response;
             }
           }
@@ -160,27 +181,40 @@ export class ModelEngine {
   }
 
   async anthropicRequest(messageStack: IGenericMessage[], llm: IAIConfig, model: string): Promise<IChatServiceResponse> {
-    const systemMessage = messageStack.find((x) => x.role === 'system');
-    const anthropic = new Anthropic({
-      apiKey: llm.apiKey,
-      dangerouslyAllowBrowser: true,
-    });
-    const message = await anthropic.messages.create({
-      model: model,
-      max_tokens: 1024,
-      system: systemMessage ? systemMessage.content : undefined,
-      messages: messageStack.filter((x) => x.role !== 'system') as IGenericAnthroMessage[],
-    });
-    this.log$.next({
-      level: 'trace',
-      message: JSON.stringify(message.content, null, 2),
-    });
-    if (message.content.length > 0 && message.content[0].type === 'text') {
-      return ModelEngine.success((message.content[0] as any).text);
-    } else {
-      this.error$.next('Unable to get text reply from Anthropic model response.');
-      this.error$.next(JSON.stringify(message.content, null, 2));
-      return ModelEngine.err('Unable to get text reply from Anthropic model response.');
+
+    const id = Utilities.formattedNow();
+    this.addPendingRequest(id, 'LLM Request');
+    try {
+      const systemMessage = messageStack.find((x) => x.role === 'system');
+      const anthropic = new Anthropic({
+        apiKey: llm.apiKey,
+        dangerouslyAllowBrowser: true,
+      });
+      const message = await anthropic.messages.create({
+        model: model,
+        max_tokens: 1024,
+        system: systemMessage ? systemMessage.content : undefined,
+        messages: messageStack.filter((x) => x.role !== 'system') as IGenericAnthroMessage[],
+      });
+      this.log$.next({
+        level: 'info',
+        message: 'anthropic response received'
+      });
+      this.log$.next({
+        level: 'trace',
+        message: JSON.stringify(message.content, null, 2),
+      });
+      if (message.content.length > 0 && message.content[0].type === 'text') {
+        return ModelEngine.success((message.content[0] as any).text);
+      } else {
+        this.error$.next('Unable to get text reply from Anthropic model response.');
+        this.error$.next(JSON.stringify(message.content, null, 2));
+        return ModelEngine.err('Unable to get text reply from Anthropic model response.');
+      }
+    } catch(error) {
+      return ModelEngine.err(error);
+    } finally {
+      this.removePendingRequest(id);
     }
   }
 
@@ -189,16 +223,29 @@ export class ModelEngine {
         new OpenAI({ baseURL: llm.openAiBaseURL, apiKey:  llm.apiKey, dangerouslyAllowBrowser: true }) :
         new OpenAI({ apiKey:  llm.apiKey, dangerouslyAllowBrowser: true });
 
-      const reply = await  instance.chat.completions
+      const id = Utilities.formattedNow();
+      this.addPendingRequest(id, 'LLM Request');
+      try {
+        const reply = await  instance.chat.completions
         .create( {
           messages: messageStack,
           model: model,
+          max_tokens: llm.maxTokens || 8192,
         })
+      this.log$.next({
+        level: 'info',
+        message: 'llm response received'
+      });
       this.log$.next({
         level: 'trace',
         message: JSON.stringify(reply.choices, null, 2),
       });
       return ModelEngine.success(reply.choices[0].message.content!);
+      } catch(error) {
+        return ModelEngine.err(error);
+      } finally {
+        this.removePendingRequest(id);
+      }
   }
 
   private getModel(llm: IAIConfig, proposed: string | undefined): string | undefined {

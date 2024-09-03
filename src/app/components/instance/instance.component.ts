@@ -11,7 +11,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MarkdownModule } from 'ngx-markdown';
 import {MatButtonToggleModule} from '@angular/material/button-toggle';
 import { MatDividerModule } from '@angular/material/divider';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSnackBar, MatSnackBarRef, TextOnlySnackBar } from '@angular/material/snack-bar';
 import { MatIconModule } from '@angular/material/icon';
 
 @Component({
@@ -62,12 +62,25 @@ export class InstanceComponent implements OnChanges {
   //         interactions: {name: string; value: string}[] = [];
   //         history: { message: string; value: string}[] = [];
 
+  ref: MatSnackBarRef<TextOnlySnackBar> | undefined;
   constructor(private electronRenderService: ElectronRenderService) {
     this.electronRenderService.GetSettings().subscribe((s) => {
       this.settings = s;
       this.intialized = true;
       this.buildInteractions();
     });
+    this.electronRenderService.pendingRequests$.subscribe((requests) => {
+
+      if (this.ref) {
+        try {
+          this.ref.dismiss();
+        } finally {
+          this.ref = undefined;
+        }
+      }
+      if (requests && requests.length > 0)
+      this.ref = this._snackBar.open("Waiting for AI Cloud response.  Be patient, it can take a while ...", 'OK');
+    })
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -79,7 +92,6 @@ export class InstanceComponent implements OnChanges {
 
   isInteractionName(name: string) {
     const isName = this.interactionNames.find(x => x === name) !== undefined;
-    console.log(`isInteractionName: ${name} among [${this.interactionNames.join('|')}] = ${isName}`);
     return isName;
   }
 
@@ -98,8 +110,7 @@ export class InstanceComponent implements OnChanges {
           const matching =  this.instance.interactions.find((x) => x.name === i.name)
           this.interactions[i.name] = matching ? matching.value : '';
           this.interactionNames.push(i.name);
-      })
-      console.log(`interaction names: ${this.interactionNames.join(' | ')}`);
+      });
     }
   }
 
@@ -117,7 +128,7 @@ export class InstanceComponent implements OnChanges {
               this._snackBar.open(`File ${file} does not exist`);
             } else {
               this.electronRenderService.OpenFile(file).subscribe(() => {
-                console.log(`opened ${file}`)
+                console.log(`opened ${file}`);
               })
             }
         });
@@ -176,12 +187,64 @@ export class InstanceComponent implements OnChanges {
     this.dirty = false;
   }
 
-
   transcribe() {
-    //todo transcribe
+
+    if (this.instance === undefined) {
+      return;
+    }
+    if (this.instance.file === undefined) {
+      return;
+    }
+
+    const instance = this.instance;
+    const file = this.instance.file;
+
+    this.electronRenderService.FileExists(file).subscribe((exists) => {
+      if (!exists) {
+        this._snackBar.open(`unable to transcribe file ${file} as it does not exist.`);
+      } else {
+        this.electronRenderService.Transcribe(this.instance, file).subscribe((response) => {
+          if (response.error) {
+            this._snackBar.open(`ERROR: ${response.error}`)
+           } else {
+            if (this.instance.id === instance.id) {
+              this.dirty = true;
+            }
+           }
+        })
+      }
+    })
+
   }
 
   runInteraction(name: string) {
+
+    const transcript = this.instance?.transcript;
+    if (transcript === undefined || transcript.length === 0) {
+      this._snackBar.open('No transcript for AI interaction.');
+    } else if (transcript.length < 200) {
+      this._snackBar.open('Transcript length is too short for AI interaction.');
+    } else {
+      const interaction = this.settings.interactions.find(x => x.name === name);
+      if (interaction === undefined) {
+        this._snackBar.open(`No interaction rule found for "${name}"`);
+      } else {
+        const instance = this.instance;
+        this.electronRenderService.Interaction(instance, name, interaction.prompt, transcript).subscribe((response) => {
+           if (response.error) {
+            this._snackBar.open(`ERROR: ${response.error}`)
+           } else {
+            this.dirty = true;
+            if (this.instance.id === instance.id) {
+              this.interactions[name] = response.text;
+              this.saveInstance();
+              this.displayMode = 'markdown';
+            }
+           }
+        })
+      }
+
+    }
 
   }
 

@@ -81,7 +81,7 @@
     </mat-card>
   </div>
   <div class="content">
-    <mat-form-field class="width-80">
+    <mat-form-field style="margin-top: 50px" class="w-95">
       <mat-label>API Key</mat-label>
       <input
         [(ngModel)]="selectedProvider().apiKey"
@@ -90,7 +90,7 @@
       />
     </mat-form-field>
     <mat-form-field
-      class="width-80"
+      class="w-95"
       *ngIf="selectedProvider().chatModels.length > 0"
     >
       <mat-label>Preferred Model</mat-label>
@@ -106,7 +106,8 @@
       </mat-select>
     </mat-form-field>
     <ng-container *ngIf="selectedProvider().chatModels.length > 0">
-      <h4>Available models:</h4>
+
+      <h4 style="margin-top: 30px;">Available models:</h4>
       <mat-chip-set aria-label="Model">
         <mat-chip *ngFor="let m of selectedProvider().chatModels"
           >{{ m }}
@@ -115,7 +116,7 @@
           </button>
         </mat-chip>
       </mat-chip-set>
-      <mat-form-field class="width-80">
+      <mat-form-field class="w-95">
         <mat-label>Add Model</mat-label>
         <input
           (keydown)="addModelKeyDown($event)"

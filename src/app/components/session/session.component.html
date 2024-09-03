@@ -1,60 +1,8 @@
 <div class="field">
   <div class="list">
     <mat-card style="padding: 20px" appearance="outlined">
-      <mat-card-title>Live Transcript</mat-card-title>
-      <mat-card-content>
-        <div class="list">
-          <mat-list role="list">
-            <mat-list-item>
-              <button class="list-child" mat-button (click)="startSreaming()">
-                Start
-              </button>
-            </mat-list-item>
-            <mat-list-item>
-              <button class="list-child" mat-button (click)="stopStreaming()">
-                Stop
-              </button>
-            </mat-list-item>
-          </mat-list>
-        </div>
-      </mat-card-content>
 
-      <mat-card-title>Record Audio</mat-card-title>
-      <mat-card-content>
-        <div class="list">
-          <mat-list role="list">
-            <mat-list-item>
-              <button class="list-child" mat-button (click)="startRecording()">
-                Start
-              </button>
-            </mat-list-item>
-            <mat-list-item>
-              <button
-                [disabled]="recordingState() !== 'start'"
-                class="list-child"
-                mat-button
-                (click)="stopRecording()"
-              >
-                Stop
-              </button>
-            </mat-list-item>
-            <mat-list-item>
-              <button
-                [disabled]="recordingState() !== 'start'"
-                class="list-child"
-                mat-button
-                (click)="cancelRecording()"
-              >
-                Cancel
-              </button>
-            </mat-list-item>
-            <mat-list-item>
-              {{ recordingMessage() }}
-            </mat-list-item>
-          </mat-list>
-        </div>
-      </mat-card-content>
-      <mat-card-title>Both</mat-card-title>
+      <mat-card-title>Record and transcribe</mat-card-title>
       <mat-card-content>
         <div class="list">
           <mat-list role="list">
@@ -90,35 +38,93 @@
           </mat-list>
         </div>
       </mat-card-content>
+
+      <mat-card-title>Live Transcript</mat-card-title>
+      <mat-card-content>
+        <div class="list">
+          <mat-list role="list">
+            <mat-list-item>
+              <button class="list-child" mat-button (click)="startSreaming()">
+                Start
+              </button>
+            </mat-list-item>
+            <mat-list-item>
+              <button class="list-child" mat-button (click)="stopStreaming()">
+                Stop
+              </button>
+            </mat-list-item>
+          </mat-list>
+        </div>
+      </mat-card-content>
+
+      <mat-card-title>Record Audio</mat-card-title>
+      <mat-card-content>
+        <div class="list">
+          <mat-list role="list">
+            <mat-list-item>
+              <button
+              [disabled]="recordingState() === 'start'"
+                class="list-child"
+                mat-button
+                (click)="startRecording()"
+              >
+                Start
+              </button>
+            </mat-list-item>
+            <mat-list-item>
+              <button
+                [disabled]="recordingState() !== 'start'"
+                class="list-child"
+                mat-button
+                (click)="stopRecording()"
+              >
+                Stop
+              </button>
+            </mat-list-item>
+            <mat-list-item>
+              <button
+                [disabled]="recordingState() !== 'start'"
+                class="list-child"
+                mat-button
+                (click)="cancelRecording()"
+              >
+                Cancel
+              </button>
+            </mat-list-item>
+          </mat-list>
+        </div>
+      </mat-card-content>
+
     </mat-card>
   </div>
   <div class="content">
     <ng-container *ngIf="transcriptInstance() !== undefined">
-      <mat-form-field class="width-80">
+      <mat-form-field class="w-95">
         <mat-label>Name</mat-label>
         <input [(ngModel)]="transcriptInstance()!.name" (ngModelChange)="publishChanges()" matInput />
       </mat-form-field>
-      <mat-form-field class="width-80">
+      <mat-form-field class="w-95">
         <mat-label>Date</mat-label>
         <input [(ngModel)]="transcriptInstance()!.date" (ngModelChange)="publishChanges()" matInput />
       </mat-form-field>
-      <mat-form-field class="width-80">
+      <mat-form-field class="w-95">
         <mat-label>File</mat-label>
         <input readonly [(ngModel)]="transcriptInstance()!.file" (ngModelChange)="publishChanges()" matInput />
       </mat-form-field>
-      <mat-form-field class="width-80">
+      <mat-form-field class="w-95">
         <mat-label>Note</mat-label>
         <textarea [(ngModel)]="transcriptInstance()!.note" (ngModelChange)="publishChanges()" matInput ></textarea>
       </mat-form-field>
-      <mat-form-field *ngIf="!inSession()" class="width-80">
+      <mat-form-field *ngIf="!inSession()" class="w-95">
         <mat-label>Transcript</mat-label>
         <textarea [(ngModel)]="transcriptInstance()!.transcript"(ngModelChange)="publishChanges()" matInput ></textarea>
       </mat-form-field>
       <button
         *ngIf="dirty()"
         class="list-child"
-        mat-button
+        mat-fab extended
         (click)="saveInstance()">
+        <mat-icon>save</mat-icon>
         Save
       </button>
     </ng-container>

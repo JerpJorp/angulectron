@@ -1,0 +1,59 @@
+<div class="field">
+  <div class="list">
+    <mat-list role="list" *ngIf="interaction$ | async as iObs">
+      <mat-list-item
+        *ngFor="let interaction of interactions$ | async"
+        role="listitem"
+      >
+        <button
+          *ngIf="iObs.name === interaction"
+          class="list-child"
+          mat-stroked-button
+          (click)="selectInteraction(interaction)"
+        >
+          {{ interaction }}
+        </button>
+        <button
+          *ngIf="iObs.name !== interaction"
+          mat-raised-button
+          (click)="selectInteraction(interaction)"
+        >
+          {{ interaction }}
+        </button>
+      </mat-list-item>
+      <mat-list-item style="margin-bottom: 20px;" *ngIf="dirty$ | async">
+        <button  class="list-child" mat-fab extended (click)="saveChanges()">
+          <mat-icon>save</mat-icon>
+          Save Changes
+        </button>
+      </mat-list-item>
+      <mat-list-item>
+        <button class="list-child" mat-fab extended (click)="addInteraction()">
+          <mat-icon>add</mat-icon>
+          New Prompt
+        </button>
+      </mat-list-item>
+
+    </mat-list>
+  </div>
+  <div class="content" *ngIf="interaction$ | async as selected">
+    <mat-form-field style="margin-top: 50px" class="w-95">
+      <mat-label>Name</mat-label>
+      <input
+        (keydown)="nameKeyDown($event)"
+        [(ngModel)]="selected.name"
+        (ngModelChange)="publishChange()"
+        matInput
+      />
+    </mat-form-field>
+    <mat-form-field  class="w-95">
+      <mat-label>Prompt</mat-label>
+      <textarea [(ngModel)]="selected.prompt" rows="5" (ngModelChange)="publishChange()" matInput ></textarea>
+    </mat-form-field>
+    <button class="list-child" mat-fab extended (click)="removeInteraction(selected)">
+      <mat-icon>delete</mat-icon>
+      Remove
+    </button>
+
+  </div>
+</div>

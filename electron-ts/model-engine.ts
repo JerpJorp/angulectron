@@ -4,7 +4,7 @@ import OpenAI from 'openai';
 import Groq from 'groq-sdk';
 import Anthropic from '@anthropic-ai/sdk';
 
-import fs from 'fs';
+import * as fs from 'fs';
 import { ipcMain } from "electron";
 
 export interface IChatServiceResponse {

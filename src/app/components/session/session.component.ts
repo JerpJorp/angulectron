@@ -11,6 +11,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { NgIf } from '@angular/common';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-transcript-session',
@@ -23,19 +25,20 @@ import { NgIf } from '@angular/common';
     MatInputModule,
     MatFormFieldModule,
     FormsModule,
+    MatTooltipModule,
+    MatIconModule,
     NgIf,
   ],
-  templateUrl: './transcript-session.component.html',
-  styleUrl: './transcript-session.component.css',
+  templateUrl: './session.component.html',
+  styleUrl: './session.component.css',
 })
-export class TranscriptSessionComponent {
+export class SessionComponent {
   private _snackBar = inject(MatSnackBar);
 
   transcriptArray = signal<string[]>([]);
   transcript = computed(() => this.transcriptArray().join('\n'));
   transcriptInstance = signal<TranscriptInstance | undefined>(undefined);
   recordingState = signal('');
-  recordingMessage = signal('');
   recorder: MediaRecorder | undefined;
   sessionError = signal<string>('');
   inSession = signal(false);
@@ -49,9 +52,11 @@ export class TranscriptSessionComponent {
     this.electronRenderService.finalTranscript$.subscribe((textList) =>
       this.transcriptArray.set(textList)
     );
-    this.electronRenderService.sessionLog$.subscribe((log) =>
-      console.log(`session log: ${log}`)
-    );
+    this.electronRenderService.sessionLog$.subscribe((log) => {
+      if (log.level != 'trace') {
+        console.log(`session log: ${log}`);
+      }
+    });
     this.electronRenderService.sessionError$.subscribe((err) => {
       console.warn(`session error: ${err}`);
       this.openSnackBar(err, 'OK');
@@ -75,8 +80,10 @@ export class TranscriptSessionComponent {
 
   stopStreaming() {
     this.cancelling = false;
+    this._snackBar.open('Streaming has stopped, but will take a while to close AI and audio channel pipes...', undefined, { duration: 2000 });
     this.electronRenderService.StreamStop().subscribe(() => {
       console.log('stream stop');
+
       this.endSession();
     });
 
@@ -116,11 +123,16 @@ export class TranscriptSessionComponent {
   async startBoth() {
     this.startSreaming();
     this.startRecording();
+    this._snackBar.open('Recording audio and live streaming to AI transcription service. Add your own notes and set the name.  When you click stop, you will be able to save everything.')
   }
 
   stopBoth() {
     this.stopStreaming();
     this.stopRecording();
+    this._snackBar.open(
+      `After you save the audio file, a new instance wil be created with the file and transcript content.  Give it a name and save it`,
+      undefined, { duration: 800 }
+    )
   }
 
   cancelBoth() {
@@ -173,29 +185,42 @@ export class TranscriptSessionComponent {
 
     this.recorder.ondataavailable = (event) => {
       audioChunks.push(event.data);
-      this.recordingMessage.set(
-        `recording: ${audioChunks.length} chunks so far`
-      );
+      this._snackBar.open(
+        `recording: ${audioChunks.length} chunks so far`, undefined,
+        { duration: 800 }
+      )
     };
 
     this.recorder.onstart = () => {
-      this.recordingMessage.set('Recording started from your microphone.');
+      this._snackBar.open(
+        'Recording started from your microphone.',
+        undefined, { duration: 800 }
+      )
       this.inSession.set(true);
     };
 
     this.recorder.onstop = () => {
       if (this.recordingState() === 'cancel') {
-        this.recordingMessage.set('cleared: recording not saved.');
+        this._snackBar.open(
+          'cleared: recording not saved.',
+          undefined, { duration: 800 }
+        )
         audioChunks.splice(0, audioChunks.length);
       } else {
-        this.recordingMessage.set('recording stopped: saving file...');
+        this._snackBar.open(
+          'recording stopped: saving file...',
+          undefined, { duration: 800 }
+        )
         const audioBlob = new Blob(audioChunks, { type: 'audio/mpeg-3' });
         const reader = new FileReader();
         reader.onload = async () => {
           this.electronRenderService
             .SaveAudio(reader.result as ArrayBuffer)
             .subscribe((fileName) => {
-              this.recordingMessage.set(`File saved as ${fileName}`);
+              this._snackBar.open(
+                `File saved as ${fileName}`,
+                undefined, { duration: 800 }
+              )
               const instance =
                 this.transcriptInstance() || TranscriptInstance.Factory();
               if (instance.file) {

@@ -3,6 +3,7 @@
     "module": "commonjs",
     "noImplicitAny": true,
     "outDir": "electron-js",
+    "target": "ES2015",
     "baseUrl": ".",
     "paths": {
       "*": ["node_modules/*"]

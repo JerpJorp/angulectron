@@ -1,52 +1,63 @@
-<mat-toolbar [color]="'primary'">
-  <button
-    mat-icon-button
-    class="example-icon"
-    aria-label="Example icon-button with menu icon"
-    [matMenuTriggerFor]="menu"
-  >
+<mat-toolbar  [color]="'primary'">
+  <button mat-icon-button [matMenuTriggerFor]="menu" >
     <mat-icon>menu</mat-icon>
   </button>
   <span>{{ title }}</span>
+  <span style="padding-left: 200px;"></span>
+
+
+  <button routerLink="/session" class="bar-button" mat-button >
+    <mat-icon>transcribe</mat-icon>
+  </button>
+  <button routerLink="/list" class="bar-button" mat-button >
+    <mat-icon>list_alt</mat-icon>
+  </button>
+
+  <button routerLink="/settings" class="bar-button" mat-button >
+    <mat-icon>toggle_on</mat-icon>
+  </button>
+  <button routerLink="/prompts" class="bar-button" mat-button >
+    <mat-icon>grid_view</mat-icon>
+  </button>
+
+
+
+  <button routerLink="/welcome" class="bar-button" mat-button >
+    <mat-icon>waving_hand</mat-icon>
+  </button>
+
 </mat-toolbar>
 <mat-menu #menu="matMenu">
-  <button
-    routerLink="/welcome"
-    routerLinkActive="active"
-    ariaCurrentWhenActive="page"
-    mat-menu-item
-  >
-    <mat-icon>waving_hand</mat-icon>
-    <span>Welcome</span>
+
+  <button routerLink="/session" routerLinkActive="active" ariaCurrentWhenActive="page" mat-menu-item >
+    <mat-icon>transcribe</mat-icon> <span>New Session</span>
   </button>
-  <button
-    routerLink="/chat"
-    routerLinkActive="active"
-    ariaCurrentWhenActive="page"
-    mat-menu-item
-  >
-    <mat-icon>chat</mat-icon>
-    <span>Chat</span>
+  <button routerLink="/list" routerLinkActive="active" ariaCurrentWhenActive="page" mat-menu-item >
+    <mat-icon>list_alt</mat-icon> <span>Sessions</span>
   </button>
-  <button
-    routerLink="/settings"
-    routerLinkActive="active"
-    ariaCurrentWhenActive="page"
-    mat-menu-item
-  >
-    <mat-icon>toggle_on</mat-icon>
-    <span>Settings</span>
+  <mat-divider></mat-divider>
+  <button routerLink="/settings" routerLinkActive="active" ariaCurrentWhenActive="page" mat-menu-item >
+    <mat-icon>toggle_on</mat-icon> <span>AI Model Settings</span>
   </button>
-  <button
-    routerLink="/transcription"
-    routerLinkActive="active"
-    ariaCurrentWhenActive="page"
-    mat-menu-item
-  >
-    <mat-icon>record_voice_over</mat-icon>
-    <span>Transcriptions</span>
+  <button routerLink="/prompts" routerLinkActive="active" ariaCurrentWhenActive="page" mat-menu-item >
+    <mat-icon>grid_view</mat-icon> <span>Prompt Settings</span>
   </button>
-  <!-- <button
+  <mat-divider></mat-divider>
+
+  <button
+    routerLink="/chat" routerLinkActive="active" ariaCurrentWhenActive="page" mat-menu-item >
+    <mat-icon>chat</mat-icon> <span>Chat</span>
+  </button>
+  <button routerLink="/welcome" routerLinkActive="active" ariaCurrentWhenActive="page" mat-menu-item >
+    <mat-icon>waving_hand</mat-icon> <span>Home</span>
+  </button>
+
+
+</mat-menu>
+
+<router-outlet />
+
+<!-- <button
     routerLink="/showcase"
     routerLinkActive="active"
     ariaCurrentWhenActive="page"
@@ -56,17 +67,3 @@
     <mat-icon>theater_comedy</mat-icon>
     <span>Showcase</span>
   </button> -->
-  <button
-    routerLink="/transcriptSession"
-    routerLinkActive="active"
-    ariaCurrentWhenActive="page"
-    mat-menu-item
-  >
-    <mat-icon>transcribe</mat-icon>
-    <span>Transcript Session</span>
-  </button>
-
-
-</mat-menu>
-
-<router-outlet />

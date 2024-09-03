@@ -1,0 +1,167 @@
+<mat-form-field class="w-95">
+  <mat-label>Name</mat-label>
+  <input
+    [(ngModel)]="instance.name"
+    (ngModelChange)="publishChanges()"
+    matInput
+  />
+</mat-form-field>
+<mat-form-field class="w-95">
+  <mat-label>Date</mat-label>
+  <input
+    [(ngModel)]="instance.date"
+    (ngModelChange)="publishChanges()"
+    matInput
+  />
+</mat-form-field>
+<table cellspacing="0"><tr>
+  <td>
+    <mat-form-field class="w-95">
+      @if (invalidFile) { <mat-label>File (* invalid *)</mat-label> } @else {
+      <mat-label>File</mat-label> }
+
+      <input
+        (keydown)="fileKeyDown($event)"
+        [(ngModel)]="instance.file"
+        (ngModelChange)="publishChanges()"
+        matInput
+      />
+    </mat-form-field>
+  </td>
+  <td>
+    <button
+    *ngIf="instance.file && instance.file.length > 0 && !invalidFile"
+    class="list-child"
+    mat-stroked-button
+    extended
+    (click)="openfile()"
+  >
+    <mat-icon>open_in_browser</mat-icon>
+    Open file
+  </button>
+  </td>
+</tr></table>
+
+
+<mat-button-toggle-group
+  style="margin-left: 60px"
+  [(ngModel)]="view"
+  (ngModelChange)="changeView()"
+>
+  <mat-button-toggle value="note">Note</mat-button-toggle>
+  <mat-button-toggle value="transcript">Transcript</mat-button-toggle>
+  <mat-button-toggle
+    [value]="interaction.name"
+    *ngFor="let interaction of settings.interactions"
+    >{{ interaction.name }}</mat-button-toggle
+  >
+  <mat-button-toggle value="raw">Raw</mat-button-toggle>
+</mat-button-toggle-group>
+
+<mat-button-toggle-group
+  [(ngModel)]="displayMode"
+  style="margin-left: 1rem"
+  (ngModelChange)="changeDisplayMode()"
+>
+  <mat-button-toggle value="edit">Edit</mat-button-toggle>
+  <mat-button-toggle value="markdown">Markdown</mat-button-toggle>
+</mat-button-toggle-group>
+<mat-divider style="margin-bottom: 30px; margin-top: 20px"></mat-divider>
+
+<div *ngIf="displayMode === 'edit'">
+  <mat-form-field *ngIf="view === 'note'" class="w-95">
+    <mat-label>Note</mat-label>
+    <textarea
+      rows="5"
+      [(ngModel)]="instance.note"
+      (ngModelChange)="publishChanges()"
+      matInput
+    ></textarea>
+  </mat-form-field>
+
+  <ng-container *ngIf="view === 'transcript'">
+    <mat-form-field class="w-95">
+      <mat-label>Transcript</mat-label>
+      <textarea
+        rows="15"
+        [(ngModel)]="instance.transcript"
+        (ngModelChange)="publishChanges()"
+        matInput
+      ></textarea>
+    </mat-form-field>
+
+    <button
+      *ngIf="instance.file && instance.file.length > 0"
+      mat-fab
+      extended
+      (click)="transcribe()"
+    >
+      @if (instance.transcript && instance.transcript.length > 0) { Retranscribe
+      from audio } @else { Transcribe from audio }
+    </button>
+  </ng-container>
+
+  <ng-container *ngIf="isInteractionName(view)">
+    <mat-form-field class="w-95">
+      <mat-label>{{ view }}</mat-label>
+      <textarea
+        rows="15"
+        [(ngModel)]="interactions[view]"
+        (ngModelChange)="publishChanges()"
+        matInput
+      ></textarea>
+    </mat-form-field>
+    <button mat-fab extended (click)="runInteraction(view)">
+      @if (interactions[view] && interactions[view].length > 0) { Request
+      {{ view }} again } @else { Request {{ view }} }
+    </button>
+  </ng-container>
+</div>
+<div *ngIf="markdownContent" style="max-width: 65vw">
+  <markdown
+    class="w-95"
+    [data]="markdownContent"
+    ngPreserveWhitespaces
+  ></markdown>
+</div>
+
+<button
+  *ngIf="dirty"
+  class="list-child"
+  mat-fab
+  extended
+  (click)="saveInstance()"
+>
+  Save
+</button>
+<button
+  *ngIf="!deleteAreYouSure"
+  class="list-child"
+  mat-fab
+  extended
+  (click)="deleteClick()"
+>
+  Delete
+</button>
+
+<button
+
+  *ngIf="deleteAreYouSure"
+  class="list-child"
+  mat-fab
+  extended
+  (click)="nevermind()"
+>
+  nevermind
+</button>
+<button
+  style="margin-left: 30px"
+  *ngIf="deleteAreYouSure"
+  class="list-child"
+  mat-fab
+  extended
+  (click)="reallyDelete()"
+>
+  Yes, I"m sure
+</button>
+

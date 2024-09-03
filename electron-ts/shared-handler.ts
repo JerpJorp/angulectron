@@ -1,4 +1,4 @@
-import { BrowserWindow, dialog, ipcMain, IpcMainInvokeEvent } from 'electron';
+import { BrowserWindow, dialog, ipcMain, IpcMainInvokeEvent, shell } from 'electron';
 import SimpleElectronStore from './simple-electron-store';
 import * as fs from 'fs';
 import { ISettings, Utilities } from './utility-classes';
@@ -25,11 +25,17 @@ export class SharedHandler {
     ipcMain.handle('file-exists', (undefined, filePath: string) => fs.existsSync(filePath) );
     ipcMain.handle('glob', () => fs.readdirSync('.'));
     ipcMain.handle('get-settings', () => this.getSettings());
+    ipcMain.handle('assets-dir', () => this.assetsDir());
     ipcMain.handle('save-settings', (undefined, settings: ISettings) => this.dataStore.set(Utilities.STORE_CONFIG, 'Providers', settings));
+    ipcMain.handle('open-file', (undefined, filePath: string) =>  shell.openPath(filePath));
   }
 
   binDir(): string {
     return this.environment === 'dev' ? `public\\bin` : `resources\\app\\bin`;
+  }
+
+  assetsDir(): string {
+    return this.environment === 'dev' ? `public` : `resources/app`;
   }
 
   binPath(exeName: string): string {

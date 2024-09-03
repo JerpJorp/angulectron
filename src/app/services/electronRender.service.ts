@@ -22,7 +22,10 @@ export class ElectronRenderService {
 
   partialTranscript$ = new Subject<string[]>();
   finalTranscript$ = new Subject<string[]>();
-  sessionLog$ = new Subject<string>();
+  sessionLog$ = new Subject<{
+    level: 'trace' | 'info' | 'important';
+    message: string;
+  }>();
   sessionError$ = new Subject<string>();
 
   constructor() {
@@ -46,7 +49,10 @@ export class ElectronRenderService {
 
       this.ipcRenderer.on('partial-transcript', (undefined, value: string[]) => this.partialTranscript$.next(value));
       this.ipcRenderer.on('final-transcript', (undefined, value: string[]) => this.finalTranscript$.next(value));
-      this.ipcRenderer.on('session-log', (undefined, value: string) => this.sessionLog$.next(value));
+      this.ipcRenderer.on('session-log', (undefined, value: {
+          level: 'trace' | 'info' | 'important';
+          message: string;
+        }) => this.sessionLog$.next(value));
       this.ipcRenderer.on('session-error', (undefined, value: string) => this.sessionError$.next(value));
 
       // Notes :
@@ -62,6 +68,7 @@ export class ElectronRenderService {
       // https://www.electronjs.org/docs/latest/api/ipc-renderer#ipcrendererinvokechannel-args
     }
   }
+
 
 
   Transcribe(audioFilePath: string): Observable<IChatServiceResponse> {
@@ -83,6 +90,11 @@ export class ElectronRenderService {
     }));
     return return$;
   }
+
+  DeleteInstance(instance: TranscriptInstance): Observable<void> {
+    return this.StoreDelete(Utilities.INSTANCE_CONFIG, instance.id);
+  }
+
 
   SaveInstance(instance: TranscriptInstance): Observable<void> {
     return  this.StoreSet(Utilities.INSTANCE_CONFIG, instance.id, instance)
@@ -124,6 +136,10 @@ export class ElectronRenderService {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return from(this.ipcRenderer.invoke('file-exists', file));
   }
+  OpenFile(file: string): Observable<void> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return from(this.ipcRenderer.invoke('open-file', file));
+  }
 
   Glob(): Observable<string[]> {
     return from(this.ipcRenderer.invoke('glob'));
@@ -143,6 +159,10 @@ export class ElectronRenderService {
 
   StreamStop(): Observable<void> {
     return from(this.ipcRenderer.invoke('stream-stop'));
+  }
+
+  AssetsDir(): Observable<string> {
+    return from(this.ipcRenderer.invoke('assets-dir'));
   }
 
   get isElectron(): boolean {

@@ -29,6 +29,7 @@ function createWindow(): BrowserWindow {
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
+      devTools: false,
     },
   });
   shared.setBrowserWindow(win);

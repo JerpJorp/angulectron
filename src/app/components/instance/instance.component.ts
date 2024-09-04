@@ -70,7 +70,6 @@ export class InstanceComponent implements OnChanges {
       this.buildInteractions();
     });
     this.electronRenderService.pendingRequests$.subscribe((requests) => {
-
       if (this.ref) {
         try {
           this.ref.dismiss();
@@ -80,7 +79,7 @@ export class InstanceComponent implements OnChanges {
       }
       if (requests && requests.length > 0)
       this.ref = this._snackBar.open("Waiting for AI Cloud response.  Be patient, it can take a while ...", 'OK');
-    })
+    });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -139,7 +138,20 @@ export class InstanceComponent implements OnChanges {
   }
 
   changeView() {
+    let thing = ''
+    if (this.view === 'transcript') {
+      thing = this.instance.transcript;
+    } else if (this.view === 'note') {
+      thing = this.instance.note;
+    } else {
+      thing = this.interactions[this.view];
+    }
+
+    this.displayMode = this.hasStuff(thing) ? 'markdown' : 'edit';
     this.setMarkDownText();
+  }
+  hasStuff(thing: string | undefined): boolean {
+      return thing !== undefined && thing?.trim().length > 0;
   }
 
   setMarkDownText() {
@@ -187,7 +199,7 @@ export class InstanceComponent implements OnChanges {
     this.dirty = false;
   }
 
-  transcribe() {
+  runTranscribe() {
 
     if (this.instance === undefined) {
       return;
@@ -209,6 +221,10 @@ export class InstanceComponent implements OnChanges {
            } else {
             if (this.instance.id === instance.id) {
               this.dirty = true;
+              this.saveInstance();
+              if (this.view === 'transcript') {
+                this.changeView();
+              }
             }
            }
         })
@@ -238,7 +254,9 @@ export class InstanceComponent implements OnChanges {
             if (this.instance.id === instance.id) {
               this.interactions[name] = response.text;
               this.saveInstance();
-              this.displayMode = 'markdown';
+              if (this.view === name) {
+                this.changeView();
+              }
             }
            }
         })

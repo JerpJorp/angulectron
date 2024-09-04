@@ -1,1 +1,55 @@
-<p>chat works!</p>
+<div class="field">
+  <div class="list">
+
+<div style="max-height: 60vh; overflow-y: scroll;">
+<table mat-table [dataSource]="instances()" class="mat-elevation-z8">
+  <ng-container matColumnDef="date">
+    <th mat-header-cell *matHeaderCellDef> Date </th>
+    <td mat-cell *matCellDef="let element"> {{element.date}} </td>
+  </ng-container>
+  <ng-container matColumnDef="name">
+    <th mat-header-cell *matHeaderCellDef> Name </th>
+    <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+  </ng-container>
+  <ng-container matColumnDef="note">
+    <th mat-header-cell *matHeaderCellDef> Note </th>
+    <td mat-cell *matCellDef="let element"> {{element.note}} </td>
+  </ng-container>
+  <ng-container matColumnDef="file">
+    <th mat-header-cell *matHeaderCellDef> Symbol </th>
+    <td mat-cell *matCellDef="let element"> {{element.file}} </td>
+  </ng-container>
+  <!-- <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr> -->
+  <tr
+    (click)="instance.set(row)"
+    mat-row
+    *matRowDef="let row; columns: displayedColumns;"
+  ></tr>
+</table>
+</div>
+</div>
+<div class="content" style="padding: 30px;">
+  @if (instance()) {
+    <markdown style="max-height: 20vh; overflow: auto;" [data]="instance()!.transcript" ngPreserveWhitespaces></markdown>
+    <mat-form-field style="margin: 50px;" class="w-95">
+      <mat-label>Current interest</mat-label>
+      <input
+        rows="10"
+        [(ngModel)]="currentQuestion"
+        matInput
+      />
+    </mat-form-field>
+    <button
+    *ngIf="currentQuestion && currentQuestion.length > 0 && instance()!.transcript && instance()!.transcript.length > 0"
+    mat-stroked-button
+    extended
+    (click)="askCurrent()"
+  >
+    <mat-icon>open_in_browser</mat-icon>
+    Ask
+  </button>
+  }
+  <markdown *ngIf="response.length > 0" style="margin-top: 50px" [data]="response" ngPreserveWhitespaces></markdown>
+
+</div>
+</div>

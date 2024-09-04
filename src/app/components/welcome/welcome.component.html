@@ -1,2 +1,27 @@
+<ng-container *ngIf="defaultConfig">
+  <mat-card style="max-width: 80vw; padding: 20px; margin-left: 10vw; margin-left: 10vw; margin-top: 80px; margin-bottom: 80px;" appearance="outlined">
+    <mat-card-title>First time setup required</mat-card-title>
+    <mat-card-content>
+        Get a password from the developer, put it in here, and click the button to
+        get the app set up with all the secret API keys necessary to interact with the
+        AI models, or none of this will work unless you go out and get your own.
+    </mat-card-content>
+    <mat-card-footer style="padding: 16px">
+      <mat-form-field class="w-95">
+        <mat-label>Password</mat-label>
+        <input [(ngModel)]="password" matInput />
+      </mat-form-field>
 
+      <button
+        style="margin: 16px"
+        class="list-child"
+        mat-fab
+        extended
+        (click)="getRemoteConfig()"
+      >
+        Set up application
+      </button>
+    </mat-card-footer>
+  </mat-card>
+</ng-container>
 <markdown class="w-95" src="welcome.md" ngPreserveWhitespaces></markdown>

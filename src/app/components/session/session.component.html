@@ -118,12 +118,15 @@
       <mat-form-field class="w-95">
         <mat-label>Note</mat-label>
         <textarea
+          rows="10"
           placeholder="Add whatever notes you want while you are recording..."
           [(ngModel)]="transcriptInstance()!.note" (ngModelChange)="publishChanges()" matInput ></textarea>
       </mat-form-field>
       <mat-form-field *ngIf="!inSession()" class="w-95">
         <mat-label>Transcript</mat-label>
-        <textarea [(ngModel)]="transcriptInstance()!.transcript"(ngModelChange)="publishChanges()" matInput ></textarea>
+        <textarea
+          placeholder="This will fill in if you are running a live transcript session when you end the session. If not, you could manually enter text here."
+          [(ngModel)]="transcriptInstance()!.transcript"(ngModelChange)="publishChanges()" matInput ></textarea>
       </mat-form-field>
       <button
         *ngIf="dirty()"

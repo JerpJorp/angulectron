@@ -42,6 +42,7 @@
   <button routerLink="/prompts" routerLinkActive="active" ariaCurrentWhenActive="page" mat-menu-item >
     <mat-icon>grid_view</mat-icon> <span>Prompt Settings</span>
   </button>
+
   <mat-divider></mat-divider>
 
   <button
@@ -52,7 +53,9 @@
     <mat-icon>waving_hand</mat-icon> <span>Home</span>
   </button>
 
-
+  <button routerLink="/aes" routerLinkActive="active" ariaCurrentWhenActive="page" mat-menu-item >
+    <mat-icon>encrypted</mat-icon> <span>AES Config</span>
+  </button>
 </mat-menu>
 
 <router-outlet />

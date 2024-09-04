@@ -1,4 +1,4 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { ElectronRenderService } from '../../services/electronRender.service';
 import { TranscriptInstance } from '../../classes/transcript-instance';
 import {MatTableModule} from '@angular/material/table';

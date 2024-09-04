@@ -10,6 +10,7 @@ import { IFileInfo } from '../../../electron-ts/file-info';
 import { IAIConfig, ISettings, Utilities } from '../../../electron-ts/utility-classes';
 import { TranscriptInstance } from '../classes/transcript-instance';
 import { IChatServiceResponse, IGenericMessage } from '../../../electron-ts/model-engine';
+import { IRemoteConfig }  from '../../../electron-ts/remote-config';
 
 @Injectable({
   providedIn: 'root',
@@ -78,8 +79,6 @@ export class ElectronRenderService {
       // https://www.electronjs.org/docs/latest/api/ipc-renderer#ipcrendererinvokechannel-args
     }
   }
-
-
 
   Transcribe(instance: TranscriptInstance, audioFilePath: string): Observable<IChatServiceResponse> {
     return from(this.ipcRenderer.invoke('transcribe', audioFilePath)).pipe(tap((response) => {
@@ -209,6 +208,17 @@ export class ElectronRenderService {
     return from(this.ipcRenderer.invoke('stream-stop'));
   }
 
+  Encrypt(plain: string, password: string) {
+    return from(this.ipcRenderer.invoke('encrypt', plain, password));
+  }
+
+  Decrypt(encrypted: string, password: string) {
+    return from(this.ipcRenderer.invoke('decrypt', encrypted, password));
+  }
+
+  RemoteConfig(): Observable<IRemoteConfig> {
+    return from (this.ipcRenderer.invoke('remote-config'))
+  }
   get isElectron(): boolean {
     return !!(window && window.process && window.process.type);
   }

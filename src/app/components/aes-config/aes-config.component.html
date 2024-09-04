@@ -1,0 +1,62 @@
+<mat-form-field class="w-95">
+  <mat-label>Plain text</mat-label>
+  <textarea
+    rows="10"
+    [(ngModel)]="plain"
+    matInput
+  ></textarea>
+</mat-form-field>
+
+<mat-form-field  class="w-95">
+  <mat-label>Password</mat-label>
+  <input  [(ngModel)]="key" matInput />
+</mat-form-field>
+
+<mat-form-field class="w-95">
+  <mat-label>Encrypted Text</mat-label>
+  <textarea
+    rows="10"
+    [(ngModel)]="encrypted"
+    matInput
+  ></textarea>
+</mat-form-field>
+
+<button
+  style="margin-left: 40px"
+  [disabled]="plain === '' || key === ''"
+  mat-fab
+  extended
+  (click)="encrypt()"
+>
+  ENCRYPT
+</button>
+<button
+  style="margin-left: 40px"
+  [disabled]="encrypted === '' || key === ''"
+  class="list-child"
+  mat-fab
+  extended
+  (click)="decrypt()"
+>
+  DECRYPT
+</button>
+
+<button
+  style="margin-left: 40px"
+  class="list-child"
+  mat-fab
+  extended
+  (click)="getRemoteConfig()"
+>
+  Get Remote Config
+</button>
+
+
+<mat-form-field class="w-95">
+  <mat-label>JSON Document</mat-label>
+  <textarea
+    rows="15"
+    [(ngModel)]="jsonDoc"
+    matInput
+  ></textarea>
+</mat-form-field>

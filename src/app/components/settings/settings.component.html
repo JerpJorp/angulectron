@@ -10,6 +10,7 @@
           class="list-child"
           mat-stroked-button
           [matBadge]="cfg.apiKey === undefined || cfg.apiKey.length === 0 ? '*' : ''"
+          matBadgePosition="before"
           (click)="selectedProviderIndex.set(pi)"
         >
           {{ cfg.provider }}
@@ -19,8 +20,8 @@
           class="list-child"
           mat-raised-button
           [matBadge]="
-            cfg.apiKey === undefined || cfg.apiKey.length === 0 ? '*' : ''
-          "
+            cfg.apiKey === undefined || cfg.apiKey.length === 0 ? '*' : ''"
+          matBadgePosition="before"
           (click)="selectedProviderIndex.set(pi)"
         >
           {{ cfg.provider }}

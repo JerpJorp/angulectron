@@ -97,7 +97,7 @@
       *ngIf="instance.file && instance.file.length > 0"
       mat-fab
       extended
-      (click)="transcribe()"
+      (click)="runTranscribe()"
     >
       @if (instance.transcript && instance.transcript.length > 0) { Retranscribe
       from audio } @else { Transcribe from audio }

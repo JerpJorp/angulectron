@@ -47,7 +47,7 @@ export class SettingsComponent {
     if (settings !== undefined && sel < settings.AIConfigs.length) {
       return settings.AIConfigs[sel];
     } else {
-      return {provider: '', apiKey: '', chatModels: [], preferredChatModel: '', liveTranscribe: false, transcribe: false};
+      return {provider: '', apiKey: '', chatModels: [], preferredChatModel: '', liveTranscribe: false, transcribe: false, currentSearch: false};
     }
   })
 

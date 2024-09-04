@@ -31,6 +31,7 @@ export class Utilities {
   static GROQ = 'Groq';
   static ASSEMBLYAI = 'AssemblyAI';
   static ANTHROPIC = 'Anthropic';
+  static PERPLEXITY = 'Perplexity';
   static OPENAI = 'OpenAI'
   static DefaultSettings(): ISettings {
     return {
@@ -65,6 +66,7 @@ export class Utilities {
           preferredChatModel: 'gpt-4o',
           transcribe: true,
           liveTranscribe: false,
+          currentSearch: false,
         },
         {
           provider: this.ANTHROPIC,
@@ -78,6 +80,7 @@ export class Utilities {
           preferredChatModel: 'claude-3-5-sonnet-20240620',
           transcribe: false,
           liveTranscribe: false,
+          currentSearch: false,
         },
         {
           provider: this.ASSEMBLYAI,
@@ -86,6 +89,7 @@ export class Utilities {
           preferredChatModel: '',
           transcribe: false,
           liveTranscribe: true,
+          currentSearch: false,
         },
         {
           provider: 'DeepInfra',
@@ -99,6 +103,7 @@ export class Utilities {
           maxTokens: 100000,
           transcribe: false,
           liveTranscribe: false,
+          currentSearch: false,
         },
         {
           provider: this.GROQ,
@@ -107,6 +112,20 @@ export class Utilities {
           preferredChatModel: '',
           transcribe: true,
           liveTranscribe: false,
+          currentSearch: false,
+        },
+        {
+          provider: this.PERPLEXITY,
+          apiKey: '',
+          chatModels: [
+            'llama-3.1-sonar-small-128k-online',
+            'llama-3.1-sonar-large-128k-online',
+            'llama-3.1-sonar-huge-128k-online'
+          ],
+          preferredChatModel: 'llama-3.1-sonar-large-128k-online',
+          transcribe: false,
+          liveTranscribe: false,
+          currentSearch: true,
         },
       ]
     }
@@ -131,4 +150,5 @@ export interface IAIConfig {
   preferredChatModel: string;
   liveTranscribe: boolean;
   transcribe: boolean;
+  currentSearch: boolean;
 }

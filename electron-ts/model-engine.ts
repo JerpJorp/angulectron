@@ -1,11 +1,14 @@
+import { BrowserWindow, ipcMain } from "electron";
+import * as fs from 'fs';
+
+import axios, {AxiosRequestConfig, RawAxiosRequestHeaders} from 'axios';
 import { Subject } from "rxjs";
-import { IAIConfig, ISettings, Utilities } from "./utility-classes";
 import OpenAI from 'openai';
 import Groq from 'groq-sdk';
 import Anthropic from '@anthropic-ai/sdk';
 
-import * as fs from 'fs';
-import { BrowserWindow, ipcMain } from "electron";
+import { IAIConfig, ISettings, Utilities } from "./utility-classes";
+
 
 export interface IChatServiceResponse {
   status: 'SUCCESS' | 'FAILURE';
@@ -43,8 +46,8 @@ export class ModelEngine {
          this.interactionRequest(systemMessage, humanMessage));
     ipcMain.handle(
       'llm-request',
-      async (undefined, messageStack: IGenericMessage[]): Promise<IChatServiceResponse> =>
-          this.llmRequest(messageStack));
+      async (undefined, messageStack: IGenericMessage[], llm?: IAIConfig, model?: string): Promise<IChatServiceResponse> =>
+          this.llmRequest(messageStack, llm, model));
   }
 
   addPendingRequest(id: string, message: string) {
@@ -147,9 +150,11 @@ export class ModelEngine {
       let llmToUse = maybeLlm || settings.AIConfigs.find((llm) => llm.provider === provider);
 
       if (!this.valid(llmToUse)) {
+        this.log$.next( {level: 'important', message: 'either specified llm or default llm provider isn not valid - looking for any model' });
         llmToUse = settings.AIConfigs.find((llm) => llm.chatModels.length > 0 && this.valid(llm) )
       }
       if (this.valid(llmToUse)) {
+        this.log$.next( {level: 'info', message: 'calling getModel on valid LLM' });
           const modelToUse = this.getModel(llmToUse!, model);
           this.log$.next(
             {
@@ -162,7 +167,13 @@ export class ModelEngine {
               return response;
             }
 
-          } else if (llmToUse!.provider === Utilities.OPENAI || llmToUse!.openAiBaseURL !== undefined) {
+          } else if (llmToUse!.provider == Utilities.PERPLEXITY) {
+            if (modelToUse !== undefined) {
+              const response = await this.perplexityRequest(messageStack, llmToUse!, modelToUse);
+              return response;
+            }
+          }
+          else if (llmToUse!.provider === Utilities.OPENAI || llmToUse!.openAiBaseURL !== undefined) {
 
             if (modelToUse !== undefined) {
               const response = this.openAiRequest(messageStack, llmToUse!, modelToUse);
@@ -183,7 +194,7 @@ export class ModelEngine {
   async anthropicRequest(messageStack: IGenericMessage[], llm: IAIConfig, model: string): Promise<IChatServiceResponse> {
 
     const id = Utilities.formattedNow();
-    this.addPendingRequest(id, 'LLM Request');
+    this.addPendingRequest(id, `${llm.provider} request`);
     try {
       const systemMessage = messageStack.find((x) => x.role === 'system');
       const anthropic = new Anthropic({
@@ -218,13 +229,76 @@ export class ModelEngine {
     }
   }
 
+  async perplexityRequest(messageStack: IGenericMessage[], llm: IAIConfig, model: string): Promise<IChatServiceResponse> {
+
+    const id = Utilities.formattedNow();
+    this.addPendingRequest(id, `${llm.provider} request`);
+    try {
+      const client = axios.create({
+        baseURL: 'https://api.perplexity.ai/chat',
+      });
+
+      axios.interceptors.request.use((config) => {
+        // Do something before request is sent
+        return config;
+      }, (error) => {
+        this.error$.next(`axios interceptor request error: ${error}`);
+        return Promise.reject(error);
+      });
+
+      client.interceptors.response.use( (response) => {
+        return response;
+      }, (error) => {
+        this.error$.next(`axios interceptor response error: ${error}`);
+        return Promise.reject(error);
+      })
+      const body = {
+        model: model, //"llama-3.1-sonar-small-128k-online",
+        messages: messageStack,
+        return_images:false,
+        return_related_questions: false,
+        search_recency_filter: "month",
+      }
+
+      const config: AxiosRequestConfig = {
+        headers: {
+          'Authorization': `Bearer ${llm.apiKey}`,
+          'Content-Type': 'application/json'
+        } as RawAxiosRequestHeaders,
+      };
+
+      this.log$.next({
+        level: 'info',
+        message: `perplexity POST sending ${JSON.stringify(config)}`
+      });
+
+      const docResponse = await client.post(`/completions`, body, config);
+      const reply = docResponse.data;
+      this.log$.next({
+        level: 'info',
+        message: 'llm response received'
+      });
+      this.log$.next({
+        level: 'trace',
+        message: JSON.stringify(reply.choices, null, 2),
+      });
+
+      return ModelEngine.success(reply.choices[0].message.content!);
+    } catch(error) {
+      return ModelEngine.err(error);
+    } finally {
+      this.removePendingRequest(id);
+    }
+
+  }
+
   async openAiRequest(messageStack: IGenericMessage[], llm: IAIConfig, model: string): Promise<IChatServiceResponse> {
       const instance = llm.openAiBaseURL ?
         new OpenAI({ baseURL: llm.openAiBaseURL, apiKey:  llm.apiKey, dangerouslyAllowBrowser: true }) :
         new OpenAI({ apiKey:  llm.apiKey, dangerouslyAllowBrowser: true });
 
       const id = Utilities.formattedNow();
-      this.addPendingRequest(id, 'LLM Request');
+      this.addPendingRequest(id, `${llm.provider} request`);
       try {
         const reply = await  instance.chat.completions
         .create( {

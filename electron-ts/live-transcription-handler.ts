@@ -33,6 +33,7 @@ export class LiveTranscriptionHander {
     this.streamingSvc.partialTranscript$.subscribe((partialTranscript) => {
       this.mainWindow.webContents.send('partial-transcript', [this.fullContent, partialTranscript]);
     });
+
     this.streamingSvc.finalTranscript$.subscribe((finalTranscript) => {
       this.fullContent.push(finalTranscript)
       this.mainWindow.webContents.send('final-transcript', this.fullContent)

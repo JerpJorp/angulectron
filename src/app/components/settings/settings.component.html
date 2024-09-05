@@ -44,9 +44,9 @@
             [(ngModel)]="settings().defaultChatProvider"
           >
             <mat-option
-              *ngFor="let Ai of settings().AIConfigs"
-              [value]="Ai.provider"
-              >{{ Ai.provider }}</mat-option
+              *ngFor="let p of providersByType()['chat']"
+              [value]="p"
+              >{{ p }}</mat-option
             >
           </mat-select>
         </mat-form-field>
@@ -57,10 +57,10 @@
             (ngModelChange)="publishChange()"
             [(ngModel)]="settings().defaultLiveTranscriptionProvider"
           >
-            <mat-option
-              *ngFor="let Ai of settings().AIConfigs"
-              [value]="Ai.provider"
-              >{{ Ai.provider }}</mat-option
+          <mat-option
+            *ngFor="let p of providersByType()['live']"
+            [value]="p"
+            >{{ p }}</mat-option
             >
           </mat-select>
         </mat-form-field>
@@ -71,10 +71,10 @@
             (ngModelChange)="publishChange()"
             [(ngModel)]="settings().defaultTranscribeProvider"
           >
-            <mat-option
-              *ngFor="let Ai of settings().AIConfigs"
-              [value]="Ai.provider"
-              >{{ Ai.provider }}</mat-option
+          <mat-option
+            *ngFor="let p of providersByType()['transcribe']"
+            [value]="p"
+            >{{ p }}</mat-option
             >
           </mat-select>
         </mat-form-field>

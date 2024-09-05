@@ -39,6 +39,21 @@ export class SettingsComponent {
 
   settings = signal<ISettings>({ AIConfigs: [], defaultChatProvider: '', defaultLiveTranscriptionProvider: '', defaultTranscribeProvider: '', interactions: []});
   providers = computed(() => this.settings()?.AIConfigs.map((p) => p.provider) );
+  providersByType = computed<{[index: string]: string[]} >(() => {
+        const settings = this.settings();
+        const returnValue: {[index: string]: string[]} = {};
+        returnValue['chat'] = [];
+        returnValue['transcribe'] = [];
+        returnValue['live'] = [];
+
+        if (settings) {
+          returnValue['chat'] = settings.AIConfigs.filter(x => x.chatModels.length > 0).map(x => x.provider);
+          returnValue['transcribe'] = settings.AIConfigs.filter(x => x.transcribe).map(x => x.provider);
+          returnValue['live'] = settings.AIConfigs.filter(x => x.liveTranscribe).map(x => x.provider);
+        }
+
+        return returnValue;
+  });
   selectedProviderIndex = signal<number>(0);
   selectedProvider = computed<IAIConfig>(() => {
     const settings = this.settings();

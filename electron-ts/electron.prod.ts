@@ -3,16 +3,6 @@ import * as url from 'url';
 import * as path from 'path';
 import { SharedHandler } from './shared-handler';
 
-// TODO: Implement SimpleElectronStore for data storage
-// const dataStore = new SimpleElectronStore();
-
-// TODO: Set up IPC handler for 'store-get' operation
-// ipcMain.handle(
-//   'store-get',
-//   (event: IpcMainInvokeEvent, store: string, key: string) =>
-//     dataStore.get(store, key)
-// );
-
 let win: BrowserWindow | null = null;
 
 const shared = new SharedHandler('prod');

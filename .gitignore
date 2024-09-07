@@ -8,7 +8,7 @@
 /packages
 /electron-js
 /public/bin
-
+/installer-scripts/Output
 # Node
 /node_modules
 npm-debug.log

@@ -2,11 +2,27 @@
 
 ## How it works
 
+> This application is meant to allow you to record/transcribe meetings and lectures, then use AI to summarize, organize, and analyze the transcript text to help you
+understand, review, and study for the lecture content. For each session, you can name it, add tags and notes, and keep track of any audio filecreated. Over time, you will accumulate a list of sessions you can use to analyze for review and study. 
+
+### Glossary
+
+| Term | Definition |
+| ----------- | ----------- |
+| **Session**  | This application keeps track of sessions, loosely defined as periods during a lecture, meeting, talk, or some kind of spoken interaction |  
+| **Transcript**  | A text representation of the audio of a session, either created from an audio file of the session or via live transcription of the audio during the session |
+| **Interactions**  | AI prompts that will take the contents of the transcript and analyze them based on a prompt request, like 'create a summary' or 'build a study guide' |
+| **Provider**  |  AI models are specific LLMs offered by various AI providers.  For example, OpenAI is a provider and has several models like gpt-4o, gpt-4o-mini, etc |
+| **Model**  |  An AI model that this application interacts with via some API. Most models are "chat" style models that handle interactions, but there are others that perform audio transcriptions |
+| **Tags**  | You can add tags to sessions to organize them, and use them to filter your list of sessions. Tagging sessions with the class name will allow you to filter the list of classes to that class for later review and study |
+| **API key**  | This application interacts with various AI providers via HTTP calls to an API endpoint.  These calls require an API key, a long nonsensical string associated with an account that is set up with billing information to pay for the API calls.  Different models have different costs per request depending on the length of the question and length of the response  |
+| **LLM**  | Large Language Model. Pretty much everything you've heard about AI lately are models that qualify as LLMs. |
+
 ### Recording and transcription
 
 Primarily, the application captures audio during lectures or meetings in one of two ways
-* Recording from your laptop microphone
-* Streaming audio from your microphone to a live AI transcription cloude service.
+- Recording from your laptop microphone
+- Streaming audio from your microphone to a live AI transcription cloude service.
 
 Yuu can do one or both by clicking on 'New Session' from the menu.  Some pointers:
 * Live transcription is nice because there is immediate feedback, but it doesn't seem to be as good as recording and then getting a transcription of the audio file
@@ -31,16 +47,20 @@ So, quickstart:
 * Add tags.  I recommend adding tags for your class name or anything else you'd want to filter by once your list of sessions gets longer
 * Click the save button
 
-### After recording
-
 As you create and save session, the app saves the information for each session instance
 * path to the audio file if you chose to record
 * live transcript content if you chose that option
 * date you created the session
-* name and notes you added
+* name, notes, and tags you added
 
-As you go to classes/meetings and record, you will accumulate a list of sessions visible in the 'sessions' menu.  You can select any of these saved session from the list by name. At this point...
+---
 
+## After recording
+
+As you go to classes/meetings and record, you will accumulate a list of sessions visible in the 'sessions' menu.  You can select any of these saved session from the list by name. From this list (or right after you have finished saving a new sessiona in the same view), you can use AI to
+
+* transcribe audio to text (if you have a saved audio file)
+* use AI interactions to analyze the transcript
 
 #### Transcript tab
 * If you used live transcription on the session, you'll see the content of the transcription
@@ -57,6 +77,9 @@ The transcript response and various AI interaction responses are in markdown for
 
 Over time, you can go back to your instance list and review your sessions and their transcripts, summaries, study guides, etc.  You can also change your default models/providers or prompts for interactions and go back to your instance list and re-request interactions.  Better prompts and different models have different effects on the quality of the response, and this could be different based on the kind of material in the transcript.
  
+---
+> There are two kinds of settings you can modify that come with a default set of values.
+
 ## Configuration
 
 As it stands, I have a few ways to do recorded transcription, one way to do live transcription, and 3 LLM providers, each with multiple models for doing analysis of the transcript.  I have a few canned prompts you can use, tweak, or add to.
@@ -69,9 +92,20 @@ When you first open the app you will see this welcome screen, and at the top, if
 
 There are a few canned prompts.  You can tweak the existing ones or add as many as you want.  Each session with a transcript can be selected in the 'sessions' view, and you can choose to run those prompts and keep the results with the instance, saving and reviewing them later.
 
-## Other things you can do
+---
 
-If you already have an audio file you want to add in, or you have a text transcript you want to analyze, you can open the 'session' view and click on 'add manual instance', adding the path to the audio file or pasting in the transcript text accordingly.  Once you've done that, you can follow the flow as if you had created a session in the app (transcribe the audio, run prompts against the transcription).  If you are taking an online class, there may be audio files or transcripts online, and you can use this method to get the file or transcript content into the app so you can use the AI interactions without having to run a session recording.
+> There are other ways to take advantage of this application if you haven't used it to record or transcribe a session, but have access to an audio recording or a text transcription
+
+There are a few other cases you might have where you want to use this app:
+* you already have an audio file of a lecture or meeting 
+* you have a text transcript 
+These might be recordings or text files you created from other sources or downloaded from the internet.  You can get these into the app by 
+* clicking on the 'Sessions' menu item
+* click on 'Create new session'
+* copy the path to the audio file into the file box if you have an audio file locally saved on your box or 
+* paste in the transcript text on the 'Transcript' tab
+
+Once you've done that, you can follow the flow as if you had created a session in the app (transcribe the audio, run prompts against the transcription).  If you are taking an online class, there may be audio files or transcripts online, and you can use this method to get the file or transcript content into the app so you can use the AI interactions without having to run a session recording.
 
 ## Work in progress - current content chat
 
@@ -79,6 +113,7 @@ There is a chat view available from the menu.  For all sessions with transcripts
 Perplexity can not only analyze the transcript but search the internet for current related information, including wikipedia, technical journals, etc.  I havn't found 
 a good prompt yet, but you can play around with it.  Depending on the session transcript, your results may vary.
 
+---
 
 # AI services
 
@@ -95,6 +130,8 @@ a good prompt yet, but you can play around with it.  Depending on the session tr
 - [Deepinfra][https://deepinfra.com/]
 
 - [Perplexity][https://www.perplexity.ai/]
+
+---
 
 ### How models work
 Modern AI models are based on something called transformer architecture. This architecture was originally developed and published by Google researchers.  RNNs (Recursive Neural Networks) have been around for a long time, but the transormer architecture introduced a concept called attention. When processing natural language, like for translation, it used to be the case that each word was processed on it's own, in order. Attention is a a process where the entire context (sentence, paragraph, whatever) is analyzed and words are contextualized based on where they are in relationship with one another.  A king cobra, the king of pop, and the king of england all have the word king, but yeah, not the same thing.  Part of training the transformer's attention mechanism was to have it predict the next word.  This forced the model to learn grammar, sentence structure, connotations, idioms, and more subtle nuances since it was rewarded for predicting the next word against a huge corpus of text.  These tranformer based architectures got so good at predicting the next word that it became a good idea to just let the model do that - start off with a bit of text and let the model guess the next word, then the next one, and so on.  And the Generative Pretrained Transformer (GPT) was born.
@@ -124,23 +161,21 @@ Not to be confused with X/Twitter/Elon Musks' Grok AI Model, Groq is a hardware 
 ## Deepinfra
 Like Groq, Deepinfa is an LLM hosting company that offers open soure model access through their API.  They offer bigger models than Groq.
 
-### About other specific models
-Meta has Llama 3.1 in 3 different sizes - 8 billion, 70 billion, and 405 billion.  THe 405 billion parameter model is very competitive with the best from OpenAI and Anthropic, and is available in this app through Deepinfra.
+---
 
-X/Twitter/Musk Grok is also competitive, but it's only available through a paid membership to X, and not via an API call.  
+### About specific models
 
-Google has several Gemini 1.5 models that are good, but aren't as good as Llama/Anthropic/OpenAI for the same price point, so I didn't include them as options.  That may change in the future. 
+| Model | info |
+| ----------- | ----------- |
+| Llama | Meta has Llama 3.1 in 3 different sizes - 8 billion, 70 billion, and 405 billion.  THe 405 billion parameter model is very competitive with the best from OpenAI and Anthropic, and is available in this app through Deepinfra, an AI model hosting service. |
+| Grok | X/Twitter/Musk Grok is also competitive, but it's only available through a paid membership to X, and not via an API call.   |
+| Gemini | Google has several Gemini 1.5 models that are good, but aren't as good as Llama/Anthropic/OpenAI for the same price point, so I didn't include them as options. That may change in the future. |
+| Other open source | There are dozens of other viable open source models, and more being created, fine tuned, merged, and published all the time |
+| Transcription |  There are two AI transcription model types.  OpenAI created a model called **Whisper**, and it takes an audio file and returns the text transcript of its content.  This model is available through the OpenAI api and the Groq api.  I set Groq as the default as it's way faster and a tiny bit cheaper per hour of transcription time. |
+| AssemblyAI | The other kind is streaming transcription, and the only provider I found is AssemblyAI.  Honestly, it's not as good, but it's pretty good. | 
+| Perplexity | Perplexity is an AI provider that has it's own models but also uses other major LLM models. The big difference is that Perplexity searches the internet for any related content to your question and uses it to reply.  All other models only know what they knew when they were trained, so Perplexity has a huge advantage when it comes to including current events and dynamic content from research papers, social media, etc. | 
 
-There are dozens of other viable open source models, and more being created, fine tuned, merged, and published all the time.  If you really want to geek out on this, it's possible to find a hosting service that offers one of these.  If they use the standard API interface you can buy credits for their API, get an API key, and configure this app to use it for handling interactions with some manual changes to some JSON files.  I can help with that for now until I build a way to do this through the app itself.
-
-#### Transcription
-There are two AI transcription model types.  OpenAI created a model called **Whisper**, and it takes an audio file and returns the text transcript of its content.  This model is available through the OpenAI api and the Groq api.  I set Groq as the default as it's way faster and a tiny bit cheaper per hour of transcription time.  
-
-## AssemblyAI
-The other kind is streaming transcription, and the only provider I found is AssemblyAI.  Honestly, it's not as good, but it's pretty good.  
-
-## Perplexity
-Perplexity is an AI provider that has it's own models but also uses other major LLM models. The big difference is that Perplexity searches the internet for any related content to your question and uses it to reply.  All other models only know what they knew when they were trained, so Perplexity has a huge advantage when it comes to including current events and dynamic content from research papers, social media, etc.
+---
 
 ### Other references
 [Github repository][https://github.com/JerpJorp/angulectron]

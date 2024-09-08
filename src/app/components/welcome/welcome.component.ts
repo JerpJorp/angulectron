@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, ViewEncapsulation } from '@angular/core';
 import { ElectronRenderService } from '../../services/electronRender.service';
 import { MarkdownModule } from 'ngx-markdown';
 import { NgIf } from '@angular/common';
@@ -9,6 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { ISettings } from '../../../../electron-ts/utility-classes';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatCardModule } from '@angular/material/card';
+
 
 @Component({
   selector: 'app-welcome',
@@ -23,7 +24,8 @@ import { MatCardModule } from '@angular/material/card';
     MatCardModule,
   ],
   templateUrl: './welcome.component.html',
-  styleUrl: './welcome.component.css'
+  styleUrl: './welcome.component.css',
+  encapsulation: ViewEncapsulation.None,
 })
 export class WelcomeComponent {
   private _snackBar = inject(MatSnackBar);
@@ -53,6 +55,9 @@ export class WelcomeComponent {
               this._snackBar.open('Settings updated', 'ok');
               this.defaultConfig = false;
             })
+        },
+        (error) => {
+          this._snackBar.open('Incorrect password!', 'ok');
         })
       } catch (error) {
         this._snackBar.open('Incorrect password!', 'ok');

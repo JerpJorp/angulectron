@@ -6,21 +6,19 @@
   <span style="padding-left: 200px;"></span>
 
 
-  <button routerLink="/session" class="bar-button" mat-button >
+  <button matTooltip="Create a new session" routerLink="/session" class="bar-button" mat-button >
     <mat-icon>transcribe</mat-icon>
   </button>
-  <button routerLink="/list" class="bar-button" mat-button >
+  <button matTooltip="All sessions" routerLink="/list" class="bar-button" mat-button >
     <mat-icon>list_alt</mat-icon>
   </button>
 
-  <button routerLink="/settings" class="bar-button" mat-button >
+  <button matTooltip="AI settings" routerLink="/settings" class="bar-button" mat-button >
     <mat-icon>toggle_on</mat-icon>
   </button>
-  <button routerLink="/prompts" class="bar-button" mat-button >
+  <button matTooltip="Interaction settings" routerLink="/prompts" class="bar-button" mat-button >
     <mat-icon>grid_view</mat-icon>
   </button>
-
-
 
   <button routerLink="/welcome" class="bar-button" mat-button >
     <mat-icon>waving_hand</mat-icon>
@@ -29,17 +27,17 @@
 </mat-toolbar>
 <mat-menu #menu="matMenu">
 
-  <button routerLink="/session" routerLinkActive="active" ariaCurrentWhenActive="page" mat-menu-item >
+  <button matTooltip="Create a new session" routerLink="/session" routerLinkActive="active" ariaCurrentWhenActive="page" mat-menu-item >
     <mat-icon>transcribe</mat-icon> <span>New Session</span>
   </button>
-  <button routerLink="/list" routerLinkActive="active" ariaCurrentWhenActive="page" mat-menu-item >
+  <button matTooltip="All sessions" routerLink="/list" routerLinkActive="active" ariaCurrentWhenActive="page" mat-menu-item >
     <mat-icon>list_alt</mat-icon> <span>Sessions</span>
   </button>
   <mat-divider></mat-divider>
-  <button routerLink="/settings" routerLinkActive="active" ariaCurrentWhenActive="page" mat-menu-item >
+  <button matTooltip="AI settings" routerLink="/settings" routerLinkActive="active" ariaCurrentWhenActive="page" mat-menu-item >
     <mat-icon>toggle_on</mat-icon> <span>AI Model Settings</span>
   </button>
-  <button routerLink="/prompts" routerLinkActive="active" ariaCurrentWhenActive="page" mat-menu-item >
+  <button matTooltip="Interaction settings" routerLink="/prompts" routerLinkActive="active" ariaCurrentWhenActive="page" mat-menu-item >
     <mat-icon>grid_view</mat-icon> <span>Prompt Settings</span>
   </button>
 

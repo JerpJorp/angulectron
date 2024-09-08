@@ -304,11 +304,11 @@ export class ModelEngine {
         .create( {
           messages: messageStack,
           model: model,
-          max_tokens: llm.maxTokens || 8192,
+          max_tokens: llm.maxTokens || undefined,
         })
       this.log$.next({
         level: 'info',
-        message: 'llm response received'
+        message: `llm response received with maxtokens ${llm.maxTokens}`
       });
       this.log$.next({
         level: 'trace',

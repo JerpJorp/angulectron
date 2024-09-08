@@ -1,4 +1,4 @@
-import { Component, computed, Signal, signal, ViewChild } from '@angular/core';
+import { Component, computed, inject, Signal, signal, ViewChild } from '@angular/core';
 import { ElectronRenderService } from '../../services/electronRender.service';
 import { IAIConfig, ISettings } from '../../../../electron-ts/utility-classes';
 import { NgClass, NgFor, NgIf } from '@angular/common';
@@ -13,6 +13,7 @@ import { FormsModule } from '@angular/forms';
 import {MatIconModule} from '@angular/material/icon';
 import {MatDividerModule} from '@angular/material/divider';
 import { MatCardModule } from '@angular/material/card';
+import { MatSnackBar } from '@angular/material/snack-bar';
 @Component({
   selector: 'app-settings',
   standalone: true,
@@ -36,6 +37,7 @@ import { MatCardModule } from '@angular/material/card';
   styleUrl: './settings.component.css'
 })
 export class SettingsComponent {
+  private _snackBar = inject(MatSnackBar);
 
   settings = signal<ISettings>({ AIConfigs: [], defaultChatProvider: '', defaultLiveTranscriptionProvider: '', defaultTranscribeProvider: '', interactions: []});
   providers = computed(() => this.settings()?.AIConfigs.map((p) => p.provider) );
@@ -65,6 +67,8 @@ export class SettingsComponent {
       return {provider: '', apiKey: '', chatModels: [], preferredChatModel: '', liveTranscribe: false, transcribe: false, currentSearch: false};
     }
   })
+
+  password = '';
 
   dirty = signal(false);
 
@@ -104,5 +108,27 @@ export class SettingsComponent {
     }
   }
 
+  getRemoteConfig() {
+    this.electronRenderService.RemoteConfig().subscribe((x) => {
+      const encrypted = x.content;
+      try {
+        this.electronRenderService.Decrypt(encrypted, this.password).subscribe((plain) => {
+            const obj = JSON.parse(plain);
+            const settings = obj.settings as ISettings;
+            this.electronRenderService.SaveSettings(settings).subscribe(() => {
+              this._snackBar.open('Settings updated', 'ok');
+              this.settings.set(settings);
+              this.dirty.set(false);
+            })
+        },
+        (error) => {
+          this._snackBar.open('Incorrect password!', 'ok');
+        }
+      )
+      } catch (error) {
+        this._snackBar.open('Incorrect password!', 'ok');
+      }
+    })
+  }
 
 }

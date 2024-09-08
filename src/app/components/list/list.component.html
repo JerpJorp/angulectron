@@ -1,8 +1,8 @@
 <div class="field">
     <div class="list">
-
+      <app-tags-select [tagThing]="tagThing" (changed)="filterList()" [title]="'Filters'"></app-tags-select>
 <div style="height: 60vh; max-height: 60vh; overflow-y: scroll;">
-  <table mat-table [dataSource]="instances()" class="mat-elevation-z8">
+  <table mat-table [dataSource]="filteredInstances()" class="mat-elevation-z8">
     <ng-container matColumnDef="date">
       <th mat-header-cell *matHeaderCellDef> Date </th>
       <td mat-cell *matCellDef="let element"> {{element.date}} </td>
@@ -21,18 +21,20 @@
     </ng-container>
     <!-- <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr> -->
     <tr
-      (click)="instance.set(row)"
+      (click)="instance.set(instanceItem)"
+      [ngClass]="{selected: instance() === instanceItem}"
       mat-row
-      *matRowDef="let row; columns: displayedColumns;"
+      *matRowDef="let instanceItem; columns: displayedColumns;"
     ></tr>
   </table>
 </div>
 <button
-mat-fab
-extended
-(click)="addInstance()">
-Create new session
+  mat-fab
+  extended
+  (click)="addInstance()">
+  Create new session
 </button>
+
 </div>
 <div class="content">
   <app-instance

@@ -14,7 +14,7 @@
     matInput
   />
 </mat-form-field>
-<div *ngIf="!pending" class="w-95" style="display: flex;">
+<div *ngIf="!pending" class="w-95" style="display: flex; overflow: hidden;">
   <mat-form-field style="flex: 1 0">
     @if (invalidFile) { <mat-label>File (* invalid *)</mat-label> } @else {
     <mat-label>File</mat-label> }
@@ -37,33 +37,8 @@
     Open file
   </button>
 </div>
-<div class="w-95" style="display: flex; justify-content: space-between;">
-  <strong style="flex: 0 0; margin-right: 30px;">Tags:</strong>
-  <mat-chip-set style="flex: 1 0 0;" aria-label="Model">
-    <mat-chip *ngFor="let tag of instance.tags"
-      >
-      <button style="min-width: 0px; padding: 5px;" mat-button (click)="removeTag(tag)">
-        <mat-icon>cancel</mat-icon>
-      </button>
-      {{ tag }}
-    </mat-chip>
-
-  </mat-chip-set>
-  <mat-form-field style="flex: 0 0; min-width: 170px">
-    <mat-label>Add Tag</mat-label>
-    <input
-      (keydown)="addTagKeyDown($event)"
-      [(ngModel)]="newTag"
-      (ngModelChange)="filterTags()"
-      matInput
-      [matAutocomplete]="auto"
-    />
-    <mat-autocomplete #auto="matAutocomplete">
-      @for (tag of visibleTags; track tag) {
-        <mat-option [value]="tag">{{tag}}</mat-option>
-      }
-    </mat-autocomplete>
-  </mat-form-field>
+<div class="w-95" style="overflow: hidden">
+    <app-tags-select [tagThing]="instance" (changed)="this.dirty = true"></app-tags-select>
 </div>
 
 
@@ -72,9 +47,16 @@
   [(ngModel)]="view"
   (ngModelChange)="changeView()"
 >
-  <mat-button-toggle value="note">Note</mat-button-toggle>
+  <mat-button-toggle value="note">
+    Note
+    @if (instance.note === undefined ||  instance.note.length === 0) { {{ ' *' }} }
+  </mat-button-toggle>
   <ng-container *ngIf="!pending">
-    <mat-button-toggle value="transcript">Transcript</mat-button-toggle>
+
+    <mat-button-toggle value="transcript">
+      Transcript
+      @if (instance.transcript === undefined ||  instance.transcript.length === 0) { {{ ' *' }} }
+    </mat-button-toggle>
     <mat-button-toggle
       [value]="interaction.name"
       *ngFor="let interaction of settings.interactions"

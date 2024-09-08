@@ -9,6 +9,10 @@
   font-weight: bold;
 }
 
+.selected {
+  background: #353535;
+  font-weight: bold;
+}
 
 table {
   min-width: 250px;

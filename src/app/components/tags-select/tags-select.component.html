@@ -1,0 +1,30 @@
+<div style="display: flex; justify-content: space-between">
+  <strong style="flex: 0 0; margin-right: 30px">{{ title }}:</strong>
+  <mat-chip-set style="flex: 1 0 0" aria-label="Model">
+    <mat-chip *ngFor="let tag of tagThing.tags">
+      <button
+        style="min-width: 0px; padding: 5px"
+        mat-button
+        (click)="removeTag(tag)"
+      >
+        <mat-icon>cancel</mat-icon>
+      </button>
+      {{ tag }}
+    </mat-chip>
+  </mat-chip-set>
+  <mat-form-field style="flex: 0 0; min-width: 170px">
+    <mat-label>Add Tag</mat-label>
+    <input
+      (keydown)="addTagKeyDown($event)"
+      [(ngModel)]="newTag"
+      (ngModelChange)="filterTags()"
+      matInput
+      [matAutocomplete]="auto"
+    />
+    <mat-autocomplete #auto="matAutocomplete">
+      @for (tag of visibleTags; track tag) {
+      <mat-option [value]="tag">{{ tag }}</mat-option>
+      }
+    </mat-autocomplete>
+  </mat-form-field>
+</div>

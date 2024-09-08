@@ -1,20 +1,27 @@
-import { Component, EventEmitter, inject, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { TranscriptInstance } from '../../classes/transcript-instance';
-import { ElectronRenderService } from '../../services/electronRender.service';
+import { Component, EventEmitter, inject, Input, OnChanges, OnDestroy, Output, SimpleChanges } from '@angular/core';
+
 import { NgFor, NgIf } from '@angular/common';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
-import { MatInputModule } from '@angular/material/input';
-import {MatTabsModule} from '@angular/material/tabs';
-import { ISettings, Utilities } from '../../../../electron-ts/utility-classes';
-import { MatButtonModule } from '@angular/material/button';
+
+import { Subscription } from 'rxjs';
+
 import { MarkdownModule } from 'ngx-markdown';
-import {MatButtonToggleModule} from '@angular/material/button-toggle';
+
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar, MatSnackBarRef, TextOnlySnackBar } from '@angular/material/snack-bar';
-import {MatChipsModule} from '@angular/material/chips';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
-import {MatAutocompleteModule} from '@angular/material/autocomplete';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+
+import { ISettings, Utilities } from '../../../../electron-ts/utility-classes';
+import { TranscriptInstance } from '../../classes/transcript-instance';
+import { ElectronRenderService } from '../../services/electronRender.service';
+import { TagsSelectComponent } from '../tags-select/tags-select.component';
 
 @Component({
   selector: 'app-instance',
@@ -33,12 +40,14 @@ import {MatAutocompleteModule} from '@angular/material/autocomplete';
     MatDividerModule,
     MatIconModule,
     MatChipsModule,
+    TagsSelectComponent,
   ],
   templateUrl: './instance.component.html',
   styleUrl: './instance.component.css'
 })
-export class InstanceComponent implements OnChanges {
+export class InstanceComponent implements OnChanges, OnDestroy {
   private _snackBar = inject(MatSnackBar);
+
   @Input() instance!: TranscriptInstance
   @Input() pending = false;
   @Input() forceDirty = false;
@@ -51,6 +60,7 @@ export class InstanceComponent implements OnChanges {
   settings: ISettings = Utilities.DefaultSettings();
   markdownJSON = '';
   interactions: { [index: string]: string } = {};
+  tagsSub$: Subscription;
   tags: string[] = [];
   visibleTags: string[] = [];
 
@@ -62,26 +72,21 @@ export class InstanceComponent implements OnChanges {
   deleteAreYouSure = false;
   newTag = '';
 
-  //         id = Utilities.formattedNow();
-  //         transcript = '' ;
-  //         note = '';
-  //         file?: string;
-  //         date = new Date().toLocaleString();
-  //         name = '';
-  //         interactions: {name: string; value: string}[] = [];
-  //         history: { message: string; value: string}[] = [];
-
   ref: MatSnackBarRef<TextOnlySnackBar> | undefined;
+
   constructor(private electronRenderService: ElectronRenderService) {
+
     this.electronRenderService.GetSettings().subscribe((s) => {
       this.settings = s;
       this.intialized = true;
       this.buildInteractions();
     });
-    this.electronRenderService.tags$.subscribe(tags => {
+
+    this.tagsSub$ = this.electronRenderService.tags$.subscribe(tags => {
       this.tags = tags;
       this.filterTags();
     });
+
     this.electronRenderService.pendingRequests$.subscribe((requests) => {
       if (this.ref) {
         try {
@@ -90,8 +95,10 @@ export class InstanceComponent implements OnChanges {
           this.ref = undefined;
         }
       }
-      if (requests && requests.length > 0)
-      this.ref = this._snackBar.open("Waiting for AI Cloud response.  Be patient, it can take a while ...", 'OK');
+
+      if (requests && requests.length > 0) {
+        this.ref = this._snackBar.open("Waiting for AI Cloud response.  Be patient, it can take a while ...", 'OK');
+      }
     });
   }
 
@@ -106,6 +113,10 @@ export class InstanceComponent implements OnChanges {
 
   }
 
+  ngOnDestroy(): void {
+    this.tagsSub$.unsubscribe();
+  }
+
   isInteractionName(name: string) {
     const isName = this.interactionNames.find(x => x === name) !== undefined;
     return isName;
@@ -118,6 +129,7 @@ export class InstanceComponent implements OnChanges {
         this.electronRenderService.FileExists(this.instance.file).subscribe((exists) => this.invalidFile = exists === false)
     }
   }
+
   buildInteractions() {
     this.checkFile();
     this.interactions = {};

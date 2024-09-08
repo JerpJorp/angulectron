@@ -304,6 +304,7 @@ export class ModelEngine {
         .create( {
           messages: messageStack,
           model: model,
+          max_tokens: llm.maxTokens || 8192,
         })
       this.log$.next({
         level: 'info',

@@ -2,9 +2,9 @@ const createWindowsInstaller = require('electron-winstaller').createWindowsInsta
 const path = require('path')
 
 const packages = [
-  'lecture-model-1.0.0-win32-arm64',
-  'lecture-model-1.0.0-win32-x64',
-  'lecture-model-1.0.0-win32-ia32',
+  'lecture-model-1.0.1-win32-arm64',
+  'lecture-model-1.0.1-win32-x64',
+  'lecture-model-1.0.1-win32-ia32',
 ]
 
 packages.forEach((package) =>
@@ -27,7 +27,7 @@ function getInstallerConfig (packageName) {
     authors: 'Kelley Bellard',
     noMsi: true,
     outputDirectory: path.join(outPath, packageName),
-    exe: 'lecture-model-1.0.0.exe',
+    exe: 'lecture-model-1.0.1.exe',
     setupExe: `${packageName}-setup.exe`,
     setupIcon: path.join(rootPath, 'public', 'favicon.ico')
   })

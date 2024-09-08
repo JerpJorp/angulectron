@@ -41,14 +41,14 @@ npm run installer:win
 The build and/or installer runs will create the following
 
 These directores contain all the files needed in each for each windows architecture flavor
-* packages\lecture-model-1.0.0-win32-arm64\
-* packages\lecture-model-1.0.0-win32-x64\
-* packages\lecture-model-1.0.0-win32-ia32\
+* packages\lecture-model-x.x.x-win32-arm64\
+* packages\lecture-model-x.x.x-win32-x64\
+* packages\lecture-model-x.x.x-win32-ia32\
 
 These executables are installers for each architecture
-* installer-scripts\Output\lecture-model-1.0.0-win32-arm64\lecture-model-1.0.0-win32-arm64-setup.exe
-* installer-scripts\Output\lecture-model-1.0.0-win32-x64\lecture-model-1.0.0-win32-x64-setup.exe
-* installer-scripts\Output\lecture-model-1.0.0-win32-ia32\lecture-model-1.0.0-win32-ia32-setup.exe
+* installer-scripts\Output\lecture-model-x.x.x-win32-arm64\lecture-model-x.x.x-win32-arm64-setup.exe
+* installer-scripts\Output\lecture-model-x.x.x-win32-x64\lecture-model-x.x.x-win32-x64-setup.exe
+* installer-scripts\Output\lecture-model-x.x.x-win32-ia32\lecture-model-x.x.x-win32-ia32-setup.exe
 
 The build artifacts will be stored in the `packages/` directory.
 

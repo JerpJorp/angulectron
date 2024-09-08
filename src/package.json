@@ -1,7 +1,7 @@
 {
   "name": "lecture-model",
   "productName": "Lecture Model",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Lecture Model",
   "main": "electron.prod.js",
   "license": "MIT",

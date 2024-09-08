@@ -28,6 +28,7 @@ So, quickstart:
 * At the end of the class/lecture/meeting, hit stop
 * Confirm the name of the audio file and save it
 * Add a name and notes if you want
+* Add tags.  I recommend adding tags for your class name or anything else you'd want to filter by once your list of sessions gets longer
 * Click the save button
 
 ### After recording

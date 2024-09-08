@@ -32,6 +32,24 @@ npm run package:linux
 npm run package:osx
 npm run package:all
 ```
+
+Run the following to create installer executables for windows:
+```bash
+npm run installer:win
+```
+
+The build and/or installer runs will create the following
+
+These directores contain all the files needed in each for each windows architecture flavor
+* packages\lecture-model-1.0.0-win32-arm64\
+* packages\lecture-model-1.0.0-win32-x64\
+* packages\lecture-model-1.0.0-win32-ia32\
+
+These executables are installers for each architecture
+* installer-scripts\Output\lecture-model-1.0.0-win32-arm64\lecture-model-1.0.0-win32-arm64-setup.exe
+* installer-scripts\Output\lecture-model-1.0.0-win32-x64\lecture-model-1.0.0-win32-x64-setup.exe
+* installer-scripts\Output\lecture-model-1.0.0-win32-ia32\lecture-model-1.0.0-win32-ia32-setup.exe
+
 The build artifacts will be stored in the `packages/` directory.
 
 ### how this app was created
@@ -95,11 +113,19 @@ Modify angular.json to include the electron related files when it builds
 install packages for application packaging
 ```bash
 npm install electron-packager cross-var --save-dev
-
+```
 add to package.json -> scripts:
 ```json
 "package:win": "npm run build && cross-var electron-packager dist/lecture-model $npm_package_name-$npm_package_version --out=packages --platform=win32 --arch=all --overwrite ",
 "package:linux": "npm run build && cross-var electron-packager dist/lecture-model $npm_package_name-$npm_package_version --out=packages --platform=linux --arch=all --overwrite ",
 "package:osx": "npm run build && cross-var electron-packager dist/lecture-model $npm_package_name-$npm_package_version --out=packages --platform=darwin --arch=all --overwrite ",
 "package:all": "npm run build && cross-var electron-packager dist/lecture-model $npm_package_name-$npm_package_version --out=packages --all --arch=all --overwrite ",
+```
+```bash
+npm install electron-winstaller --save-dev
+```
+create ./create-installer.js
+add to package.json -> scripts
+```json
+"installer:win": "npm run package:win && node create-installer.js"
 ```

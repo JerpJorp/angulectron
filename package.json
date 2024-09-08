@@ -13,7 +13,8 @@
     "package:win": "npm run build && cross-var electron-packager dist/lecture-model/browser $npm_package_name-$npm_package_version --out=packages --platform=win32 --arch=all --overwrite --icon=dist/lecture-model/browser/favicon.ico",
     "package:linux": "npm run build && cross-var electron-packager dist/lecture-model/browser $npm_package_name-$npm_package_version --out=packages --platform=linux --arch=all --overwrite --icon=dist/lecture-model/browser/favicon.ico",
     "package:osx": "npm run build && cross-var electron-packager dist/lecture-model/browser $npm_package_name-$npm_package_version --out=packages --platform=darwin --arch=all --overwrite --icon=dist/lecture-model/browser/favicon.ico",
-    "package:all": "npm run build && cross-var electron-packager dist/lecture-model/browser $npm_package_name-$npm_package_version --out=packages --all --arch=all --overwrite --icon=dist/lecture-model/browser/favicon.ico"
+    "package:all": "npm run build && cross-var electron-packager dist/lecture-model/browser $npm_package_name-$npm_package_version --out=packages --all --arch=all --overwrite --icon=dist/lecture-model/browser/favicon.ico",
+    "installer:win": "npm run package:win && node create-installer.js"
   },
   "private": true,
   "dependencies": {
@@ -47,6 +48,7 @@
     "cross-var": "^1.1.0",
     "electron": "^32.0.1",
     "electron-packager": "^17.1.2",
+    "electron-winstaller": "^5.4.0",
     "jasmine-core": "~5.2.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",

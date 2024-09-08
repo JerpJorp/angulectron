@@ -99,43 +99,13 @@
   </div>
   <div class="content">
     <ng-container *ngIf="transcriptInstance() !== undefined">
-      <mat-form-field class="w-95">
-        <mat-label>Name</mat-label>
-        <input
-          placeholder="Name this something relevant to the class/lecture/meeting you are recording. This is how you will see it in the list of sessions later, so give it a good, distinctive name."
-          [(ngModel)]="transcriptInstance()!.name" (ngModelChange)="publishChanges()" matInput />
-      </mat-form-field>
-      <mat-form-field class="w-95">
-        <mat-label>Date</mat-label>
-        <input readonly [(ngModel)]="transcriptInstance()!.date" (ngModelChange)="publishChanges()" matInput />
-      </mat-form-field>
-      <mat-form-field class="w-95">
-        <mat-label>File</mat-label>
-        <input
-          placeholder="read-only: will be filled in if you are recording audio when you stop"
-          readonly [(ngModel)]="transcriptInstance()!.file" (ngModelChange)="publishChanges()" matInput />
-      </mat-form-field>
-      <mat-form-field class="w-95">
-        <mat-label>Note</mat-label>
-        <textarea
-          rows="10"
-          placeholder="Add whatever notes you want while you are recording..."
-          [(ngModel)]="transcriptInstance()!.note" (ngModelChange)="publishChanges()" matInput ></textarea>
-      </mat-form-field>
-      <mat-form-field *ngIf="!inSession()" class="w-95">
-        <mat-label>Transcript</mat-label>
-        <textarea
-          placeholder="This will fill in if you are running a live transcript session when you end the session. If not, you could manually enter text here."
-          [(ngModel)]="transcriptInstance()!.transcript"(ngModelChange)="publishChanges()" matInput ></textarea>
-      </mat-form-field>
-      <button
-        *ngIf="dirty()"
-        class="list-child"
-        mat-fab extended
-        (click)="saveInstance()">
-        <mat-icon>save</mat-icon>
-        Save
-      </button>
+      <app-instance
+        class="w-95"
+        [instance]="transcriptInstance()!"
+        [pending]="inSession()"
+        [forceDirty]="!inSession() && transcriptInstance() !== undefined"
+        (delete)="transcriptInstance.set(undefined)"
+    ></app-instance>
     </ng-container>
     <ng-container *ngIf="transcript().length > 0">
       <markdown [data]="transcript()" ngPreserveWhitespaces></markdown>

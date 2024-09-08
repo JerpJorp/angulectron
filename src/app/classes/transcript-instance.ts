@@ -5,6 +5,7 @@ export class TranscriptInstance {
   transcript = '' ;
   note = '';
   file?: string;
+  tags: string[] = [];
   date = new Date().toLocaleString();
   name = '';
   interactions: {name: string; value: string}[] = [];
@@ -25,6 +26,7 @@ export class TranscriptInstance {
       transcript: props?.transcript || '',
       file: props?.file || undefined,
       date: props?.date || new Date().toLocaleString(),
+      tags: [],
       interactions: [],
       history: []
     };

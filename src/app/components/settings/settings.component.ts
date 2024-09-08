@@ -91,6 +91,7 @@ export class SettingsComponent {
     this.selectedProvider().chatModels = this.selectedProvider().chatModels.filter((x) => x !== modelName);
     this.publishChange()
   }
+
   addModelKeyDown(event: KeyboardEvent) {
     if (event.key === "Enter" || event.key === "Tab") {
       const newModel = this.newModel();

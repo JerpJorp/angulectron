@@ -13,6 +13,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
 import { NgIf } from '@angular/common';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { InstanceComponent } from '../instance/instance.component';
 
 
 @Component({
@@ -29,6 +30,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatTooltipModule,
     MatIconModule,
     NgIf,
+    InstanceComponent,
   ],
   templateUrl: './session.component.html',
   styleUrl: './session.component.css',

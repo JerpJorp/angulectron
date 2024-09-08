@@ -6,9 +6,9 @@ export class Utilities {
   }[] {
     return [
       {
-        name: 'ffmpeg',
-        devPath: 'public\\bin\\ffmpeg.exe',
-        prodPath: 'resources\\app\\bin\\ffmpeg.exe',
+        name: 'sox',
+        devPath: 'public\\bin\\sox.exe',
+        prodPath: 'resources\\app\\bin\\sox.exe',
       },
     ];
   }

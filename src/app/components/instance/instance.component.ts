@@ -12,7 +12,9 @@ import { MarkdownModule } from 'ngx-markdown';
 import {MatButtonToggleModule} from '@angular/material/button-toggle';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar, MatSnackBarRef, TextOnlySnackBar } from '@angular/material/snack-bar';
+import {MatChipsModule} from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
+import {MatAutocompleteModule} from '@angular/material/autocomplete';
 
 @Component({
   selector: 'app-instance',
@@ -23,12 +25,14 @@ import { MatIconModule } from '@angular/material/icon';
     MatFormFieldModule,
     FormsModule,
     MatInputModule,
+    MatAutocompleteModule,
     MatTabsModule,
     MatButtonModule,
     MarkdownModule,
     MatButtonToggleModule,
     MatDividerModule,
     MatIconModule,
+    MatChipsModule,
   ],
   templateUrl: './instance.component.html',
   styleUrl: './instance.component.css'
@@ -36,6 +40,8 @@ import { MatIconModule } from '@angular/material/icon';
 export class InstanceComponent implements OnChanges {
   private _snackBar = inject(MatSnackBar);
   @Input() instance!: TranscriptInstance
+  @Input() pending = false;
+  @Input() forceDirty = false;
   @Output() saved = new EventEmitter<void>();
   @Output() delete = new EventEmitter<void>();
 
@@ -45,6 +51,8 @@ export class InstanceComponent implements OnChanges {
   settings: ISettings = Utilities.DefaultSettings();
   markdownJSON = '';
   interactions: { [index: string]: string } = {};
+  tags: string[] = [];
+  visibleTags: string[] = [];
 
   markdownContent: string | undefined;
   interactionNames: string[] = []
@@ -52,6 +60,7 @@ export class InstanceComponent implements OnChanges {
   intialized = false;
   invalidFile = false;
   deleteAreYouSure = false;
+  newTag = '';
 
   //         id = Utilities.formattedNow();
   //         transcript = '' ;
@@ -68,6 +77,10 @@ export class InstanceComponent implements OnChanges {
       this.settings = s;
       this.intialized = true;
       this.buildInteractions();
+    });
+    this.electronRenderService.tags$.subscribe(tags => {
+      this.tags = tags;
+      this.filterTags();
     });
     this.electronRenderService.pendingRequests$.subscribe((requests) => {
       if (this.ref) {
@@ -87,6 +100,10 @@ export class InstanceComponent implements OnChanges {
       this.buildInteractions();
       this.setMarkDownText();
     }
+    if (changes['forceDirty'] && this.forceDirty) {
+      this.dirty = true;
+    }
+
   }
 
   isInteractionName(name: string) {
@@ -97,6 +114,7 @@ export class InstanceComponent implements OnChanges {
   checkFile() {
     this.invalidFile = false;
     if (this.instance.file && this.instance.file.length > 0) {
+      this.instance.file = this.instance.file.replaceAll('"','');
         this.electronRenderService.FileExists(this.instance.file).subscribe((exists) => this.invalidFile = exists === false)
     }
   }
@@ -116,6 +134,31 @@ export class InstanceComponent implements OnChanges {
   fileKeyDown(event: KeyboardEvent) {
     if (event.key === "Enter" || event.key === "Tab") {
       this.checkFile();
+    }
+  }
+
+  filterTags() {
+    if (this.newTag.length > 0) {
+        const tag = this.newTag.toLocaleUpperCase();
+        this.visibleTags = this.tags
+          .map(t => t.toLocaleUpperCase())
+          .filter(t => t.indexOf(tag) > -1)
+          .filter(t => this.instance.tags.indexOf(t) === -1)
+    }
+  }
+
+  removeTag(tag: string) {
+    this.instance.tags = this.instance.tags.filter(x => x !== tag);
+    this.filterTags();
+    this.dirty = true;
+  }
+
+  addTagKeyDown(event: KeyboardEvent) {
+    if (this.newTag.length > 0 && event.key === "Enter" || event.key === "Tab") {
+      this.instance.tags.push(this.newTag.toLocaleUpperCase());
+      this.newTag = '';
+      this.filterTags();
+      this.dirty = true;
     }
   }
 

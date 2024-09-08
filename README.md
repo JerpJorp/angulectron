@@ -6,6 +6,10 @@ This is my base application template for Angular 18, Electron 32, and Angular/ma
 npm start
 ```
 
+### additional files
+To run live transcripts or to package/deploy app, you will need to copy sox dlls into the ./public/bin directory from 
+https://sourceforge.net/projects/sox/files/sox/14.4.1/sox-14.4.1a-win32.zip/
+
 ## Code scaffolding
 Run `ng g c components/omponent-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
 

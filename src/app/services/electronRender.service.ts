@@ -5,7 +5,7 @@ import { Injectable } from '@angular/core';
 import { IpcRenderer, ipcRenderer, webFrame } from 'electron';
 import * as childProcess from 'child_process';
 import * as fs from 'fs';
-import { from, map, Observable, Subject, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, from, map, Observable, of, Subject, switchMap, tap } from 'rxjs';
 import { IFileInfo } from '../../../electron-ts/file-info';
 import { IAIConfig, ISettings, Utilities } from '../../../electron-ts/utility-classes';
 import { TranscriptInstance } from '../classes/transcript-instance';
@@ -20,6 +20,9 @@ export class ElectronRenderService {
   webFrame!: typeof webFrame;
   childProcess!: typeof childProcess;
   fs!: typeof fs;
+
+  instanceTags$ = new BehaviorSubject<{[index: string]: string[]}>({});
+  tags$ = new BehaviorSubject<string[]>([]);
 
   pendingRequests$ = new Subject<string[]>();
   partialTranscript$ = new Subject<string[]>();
@@ -66,6 +69,12 @@ export class ElectronRenderService {
         this.sessionError$.next(err);
       });
 
+      this.instanceTags$.subscribe(tagInstances => {
+          const all = Object.values(tagInstances).reduce((p, i) => p = [...p, ...i], []);
+          this.tags$.next(Array.from(new Set(all)));
+      })
+
+      this.GetInstances().subscribe((instances) => console.log(`Retrieved ${instances.length} sessions from storage`))
       // Notes :
       // * A NodeJS's dependency imported with 'window.require' MUST BE present in `dependencies` of both `app/package.json`
       // and `package.json (root folder)` in order to make it work here in Electron's Renderer process (src folder)
@@ -127,24 +136,49 @@ export class ElectronRenderService {
   }
 
   GetInstance(instance: TranscriptInstance): Observable<TranscriptInstance | undefined> {
-    return this.StoreGet(Utilities.INSTANCE_CONFIG, instance.id);
+    const obs$ = from(this.StoreGet(Utilities.INSTANCE_CONFIG, instance.id));
+    return obs$.pipe(map(i => {
+      this.cleanInstance(i as TranscriptInstance | undefined);
+      return i as TranscriptInstance | undefined;
+    }));
   }
 
+  private cleanInstance(instance: TranscriptInstance | undefined) {
+    if (instance) {
+      if(instance.tags == undefined) {
+        instance.tags = [];
+      }
+    }
+  }
   GetInstances(): Observable<TranscriptInstance[]> {
     const return$ = this.StoreGetFileInfo(Utilities.INSTANCE_CONFIG).pipe(map((x) => {
+      const tagInfo: { [index: string]: string[] } = {}
       const instances = Object.values(x.info.data) as TranscriptInstance[];
+      instances
+        .map(i => i as TranscriptInstance)
+        .forEach(i => {
+          this.cleanInstance(i);
+          tagInfo[i.id] = i.tags;
+        });
+      this.instanceTags$.next(tagInfo);
       return instances;
     }));
     return return$;
   }
 
   DeleteInstance(instance: TranscriptInstance): Observable<void> {
+    const tagInfo = this.instanceTags$.value;
+    tagInfo[instance.id] = [];
+    this.instanceTags$.next(tagInfo);
+
     return this.StoreDelete(Utilities.INSTANCE_CONFIG, instance.id);
   }
 
-
   SaveInstance(instance: TranscriptInstance): Observable<void> {
-    return  this.StoreSet(Utilities.INSTANCE_CONFIG, instance.id, instance)
+    const tagInfo = this.instanceTags$.value;
+    tagInfo[instance.id] = instance.tags || [];
+    this.instanceTags$.next(tagInfo);
+    return  this.StoreSet(Utilities.INSTANCE_CONFIG, instance.id, instance);
   }
 
   SaveAudio(arrayBuffer: ArrayBuffer): Observable<string> {
@@ -163,7 +197,7 @@ export class ElectronRenderService {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return from(this.ipcRenderer.invoke('data-path'));
   }
-  StoreGet(store: string, key: string): Observable<any> {
+  StoreGet(store: string, key: string): Observable<unknown> {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return from(this.ipcRenderer.invoke('store-get', store, key));
   }

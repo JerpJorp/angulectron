@@ -1,7 +1,7 @@
 <div class="field">
     <div class="list">
 
-<div style="max-height: 60vh; overflow-y: scroll;">
+<div style="height: 60vh; max-height: 60vh; overflow-y: scroll;">
   <table mat-table [dataSource]="instances()" class="mat-elevation-z8">
     <ng-container matColumnDef="date">
       <th mat-header-cell *matHeaderCellDef> Date </th>
@@ -27,6 +27,12 @@
     ></tr>
   </table>
 </div>
+<button
+mat-fab
+extended
+(click)="addInstance()">
+Create new session
+</button>
 </div>
 <div class="content">
   <app-instance

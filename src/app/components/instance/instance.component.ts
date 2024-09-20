@@ -3,7 +3,7 @@ import { Component, EventEmitter, inject, Input, OnChanges, OnDestroy, Output, S
 import { NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import { debounceTime, Observable, of, pipe, Subject, Subscription, switchMap, tap } from 'rxjs';
+import { catchError, debounceTime, Observable, of, pipe, Subject, Subscription, switchMap, tap } from 'rxjs';
 
 import { MarkdownModule } from 'ngx-markdown';
 
@@ -22,6 +22,7 @@ import { ISettings, Utilities } from '../../../../electron-ts/utility-classes';
 import { TranscriptInstance } from '../../classes/transcript-instance';
 import { ElectronRenderService } from '../../services/electronRender.service';
 import { TagsSelectComponent } from '../tags-select/tags-select.component';
+import { MatSelectModule } from '@angular/material/select';
 
 @Component({
   selector: 'app-instance',
@@ -41,6 +42,7 @@ import { TagsSelectComponent } from '../tags-select/tags-select.component';
     MatIconModule,
     MatChipsModule,
     TagsSelectComponent,
+    MatSelectModule,
   ],
   templateUrl: './instance.component.html',
   styleUrl: './instance.component.css'
@@ -55,6 +57,8 @@ export class InstanceComponent implements OnChanges, OnDestroy {
   @Output() delete = new EventEmitter<void>();
 
   displayMode: 'edit' | 'markdown' = 'edit';
+  historyDisplayMode: 'edit' | 'markdown' = 'edit';
+
 
   view: string = 'note' //  note, transcript, or interaction name
   settings: ISettings = Utilities.DefaultSettings();
@@ -72,6 +76,10 @@ export class InstanceComponent implements OnChanges, OnDestroy {
   deleteAreYouSure = false;
   newTag = '';
   dirty$ = new Subject<void>();
+
+  historyIndex = -1;
+  historyContent: string | undefined = undefined;
+  history: { message: string; value: string; }[] = [];
 
   ref: MatSnackBarRef<TextOnlySnackBar> | undefined;
 
@@ -91,13 +99,7 @@ export class InstanceComponent implements OnChanges, OnDestroy {
     });
 
     this.electronRenderService.pendingRequests$.subscribe((requests) => {
-      if (this.ref) {
-        try {
-          this.ref.dismiss();
-        } finally {
-          this.ref = undefined;
-        }
-      }
+      this.hideSnackbar();
 
       if (requests && requests.length > 0) {
         this.ref = this._snackBar.open("Waiting for AI Cloud response.  Be patient, it can take a while ...", 'OK');
@@ -105,9 +107,32 @@ export class InstanceComponent implements OnChanges, OnDestroy {
     });
   }
 
+  historyIndexChange(newvalue: number) {
+    this.historyContent = this  .history[newvalue]?.value;
+  }
+
+  setHistory() {
+    if (this.instance && this.instance.history) {
+      this.history = this.instance.history.filter((x) => x.value !== undefined && x.value.trim().length > 0);
+      this.historyContent = undefined;
+      this.historyIndex = -1;
+
+    }
+  }
+  private hideSnackbar() {
+    if (this.ref) {
+      try {
+        this.ref.dismiss();
+      } finally {
+        this.ref = undefined;
+      }
+    }
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['instance'] && this.intialized) {
       this.dirty = false;
+      this.setHistory();
       this.buildInteractions();
       this.setMarkDownText();
     }
@@ -249,7 +274,7 @@ export class InstanceComponent implements OnChanges, OnDestroy {
             message: `Updating value for ${k}:  old value:`,
             value: matching.value,
           });
-
+          this.setHistory();
           matching.value = value;
         } else {
           this.instance.interactions.push({ name: k, value: value })
@@ -278,14 +303,20 @@ export class InstanceComponent implements OnChanges, OnDestroy {
         this._snackBar.open(`unable to transcribe file ${file} as it does not exist.`);
       } else {
 
+        if (file.endsWith('_compressed.mp3')) {
+          this.ref = this._snackBar.open(`Compressing audio.  Long audio files may take a while`, 'OK',  {duration: 10000})
+        }
         const obs$: Observable<string> = file.endsWith('_compressed.mp3') ?
           of(file) :
-          of(this._snackBar.open(`Compressing audio.  Long audio files may take a while`, 'OK',  {duration: 3000})).pipe(switchMap(() => {
-            return this.electronRenderService.CompressAudio(file, 24).pipe(tap((compressed) => {
+
+          this.electronRenderService.CompressAudio(file, 24).pipe(tap((compressed) => {
               this.instance.file = compressed;
               this.dirty$.next();
+            }), catchError((error) => {
+              this.hideSnackbar();
+              this._snackBar.open(`error compressing audio: ${error}`);
+              throw error;
             }));
-          }));
 
         obs$.subscribe((file) => {
           this.electronRenderService.Transcribe(this.instance, file).subscribe((response) => {
@@ -303,11 +334,9 @@ export class InstanceComponent implements OnChanges, OnDestroy {
         })
       }
     })
-
   }
 
   runInteraction(name: string) {
-
     const transcript = this.instance?.transcript;
     if (transcript === undefined || transcript.length === 0) {
       this._snackBar.open('No transcript for AI interaction.');
@@ -334,9 +363,7 @@ export class InstanceComponent implements OnChanges, OnDestroy {
            }
         })
       }
-
     }
-
   }
 
   deleteClick() {

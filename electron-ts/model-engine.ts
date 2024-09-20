@@ -48,6 +48,10 @@ export class ModelEngine {
       'llm-request',
       async (undefined, messageStack: IGenericMessage[], llm?: IAIConfig, model?: string): Promise<IChatServiceResponse> =>
           this.llmRequest(messageStack, llm, model));
+    ipcMain.handle(
+      'models',
+      async (undefined, llm?: IAIConfig): Promise<{models: string[]; error?: any}> =>
+          this.models(llm));
   }
 
   addPendingRequest(id: string, message: string) {
@@ -134,6 +138,51 @@ export class ModelEngine {
     ];
     return this.llmRequest(messageStack);
 }
+
+  async models(maybeLlm?: IAIConfig) : Promise<{ models: string[]; error?: any; }> {
+
+      const settings = this.getSettings()
+      const provider = settings.defaultChatProvider;
+
+      const llmtoUse = maybeLlm || settings.AIConfigs.find((llm) => llm.provider === provider);
+      const llm = llmtoUse!;
+      this.log$.next(
+        {
+          level: 'important',
+          message: `models request: LLM=${llm?.provider} `,
+        });
+
+        let reply: any = {};
+        if (llm.provider == Utilities.ANTHROPIC) {
+          const anthropic = new Anthropic({
+            apiKey: llm.apiKey,
+            dangerouslyAllowBrowser: true,
+          });
+          reply = await anthropic.get('models');
+
+        } else if (llm.provider == Utilities.PERPLEXITY) {
+          const instance = new OpenAI({ baseURL: 'https://api.perplexity.ai/chat', apiKey:  llm.apiKey, dangerouslyAllowBrowser: true });
+          reply = await instance.models.list();
+        } else {
+          const instance = llm.openAiBaseURL ?
+            new OpenAI({ baseURL: llm.openAiBaseURL, apiKey:  llm.apiKey, dangerouslyAllowBrowser: true }) :
+            new OpenAI({ apiKey:  llm.apiKey, dangerouslyAllowBrowser: true });
+          reply = await instance.models.list();
+        }
+
+
+
+      this.log$.next(
+        {
+          level: 'important',
+          message: `models reply: ${JSON.stringify(reply.data)}`,
+        });
+
+      return {
+        models: [],
+        error: undefined,
+      }
+  }
 
   async llmRequest(messageStack: IGenericMessage[], maybeLlm?: IAIConfig, model?: string ): Promise<IChatServiceResponse> {
 

@@ -76,7 +76,7 @@ Save
       </mat-button-toggle
     >
   </ng-container>
-  <mat-button-toggle value="raw">Raw</mat-button-toggle>
+  <mat-button-toggle value="history">History</mat-button-toggle>
 </mat-button-toggle-group>
 
 <mat-button-toggle-group
@@ -89,6 +89,7 @@ Save
 </mat-button-toggle-group>
 <mat-divider style="margin-bottom: 30px; margin-top: 20px"></mat-divider>
 
+
 <div *ngIf="displayMode === 'edit'">
   <mat-form-field *ngIf="view === 'note'" class="w-95">
     <mat-label>Note</mat-label>
@@ -99,6 +100,50 @@ Save
       matInput
     ></textarea>
   </mat-form-field>
+
+  <ng-container *ngIf="view === 'history'">
+    <mat-form-field class="w-95">
+      <mat-label>History</mat-label>
+      <mat-select
+        (ngModelChange)="historyIndexChange($event)"
+        [(ngModel)]="historyIndex"
+      >
+      <mat-option
+        *ngFor="let entry of history; let idx = index"
+        [value]="idx"
+        >{{ entry.message }}</mat-option
+        >
+      </mat-select>
+    </mat-form-field>
+
+    <mat-button-toggle-group
+      [(ngModel)]="historyDisplayMode"
+      style="margin-left: 1rem"
+    >
+      <mat-button-toggle value="edit">Edit</mat-button-toggle>
+      <mat-button-toggle value="markdown">Markdown</mat-button-toggle>
+    </mat-button-toggle-group>
+
+    <div *ngIf="historyDisplayMode === 'markdown'" style="max-width: 65vw">
+      <markdown
+        class="w-95"
+        [data]="historyContent"
+        ngPreserveWhitespaces
+      ></markdown>
+    </div>
+    <ng-container *ngIf="historyDisplayMode === 'edit'">
+      <mat-form-field class="w-95">
+        <mat-label>Content</mat-label>
+        <textarea
+          rows="15"
+          readonly
+          [(ngModel)]="historyContent"
+          matInput
+        ></textarea>
+      </mat-form-field>
+
+  </ng-container>
+  </ng-container>
 
   <ng-container *ngIf="view === 'transcript'">
     <mat-form-field class="w-95">

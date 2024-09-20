@@ -1,0 +1,182 @@
+<div class="field">
+  <div class="list">
+    <mat-list role="list">
+      <mat-list-item
+        *ngFor="let cfg of settings()?.AIConfigs; let pi = index"
+        role="listitem"
+      >
+        <button
+          *ngIf="selectedProviderIndex() === pi"
+          class="list-child"
+          mat-stroked-button
+          [matBadge]="cfg.apiKey === undefined || cfg.apiKey.length === 0 ? '*' : ''"
+          matBadgePosition="before"
+          (click)="selectedProviderIndex.set(pi)"
+        >
+          {{ cfg.provider }}
+        </button>
+        <button
+          *ngIf="selectedProviderIndex() !== pi"
+          class="list-child"
+          mat-raised-button
+          [matBadge]="
+            cfg.apiKey === undefined || cfg.apiKey.length === 0 ? '*' : ''"
+          matBadgePosition="before"
+          (click)="selectedProviderIndex.set(pi)"
+        >
+          {{ cfg.provider }}
+        </button>
+      </mat-list-item>
+      <mat-list-item *ngIf="this.dirty()">
+        <button class="list-child" mat-fab extended (click)="saveChanges()">
+          <mat-icon>save</mat-icon>
+          Save Changes
+        </button>
+      </mat-list-item>
+    </mat-list>
+    <mat-card style="padding: 30px" appearance="outlined">
+      <mat-card-title style="margin-bottom: 35px;">Preffered settings</mat-card-title>
+      <mat-card-content>
+        <mat-form-field>
+          <mat-label>Prompt Handler</mat-label>
+          <mat-select
+            (ngModelChange)="publishChange()"
+            [(ngModel)]="settings().defaultChatProvider"
+          >
+            <mat-option
+              *ngFor="let p of providersByType()['chat']"
+              [value]="p"
+              >{{ p }}</mat-option
+            >
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Live Transcription Handler</mat-label>
+          <mat-select
+            (ngModelChange)="publishChange()"
+            [(ngModel)]="settings().defaultLiveTranscriptionProvider"
+          >
+          <mat-option
+            *ngFor="let p of providersByType()['live']"
+            [value]="p"
+            >{{ p }}</mat-option
+            >
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Recorded Transcription Handler</mat-label>
+          <mat-select
+            (ngModelChange)="publishChange()"
+            [(ngModel)]="settings().defaultTranscribeProvider"
+          >
+          <mat-option
+            *ngFor="let p of providersByType()['transcribe']"
+            [value]="p"
+            >{{ p }}</mat-option
+            >
+          </mat-select>
+        </mat-form-field>
+      </mat-card-content>
+    </mat-card>
+    <mat-card style="padding: 30px" appearance="outlined">
+      <mat-card-title>App setup</mat-card-title>
+      <mat-card-content>
+          Use password to update to newest application settings
+      </mat-card-content>
+      <mat-card-footer style="padding: 16px">
+        <mat-form-field class="w-95">
+          <mat-label>Password</mat-label>
+          <input [(ngModel)]="password" matInput />
+        </mat-form-field>
+
+        <button
+          style="margin: 16px"
+          class="list-child"
+          mat-fab
+          extended
+          (click)="getRemoteConfig()"
+        >
+          Set up application
+        </button>
+      </mat-card-footer>
+    </mat-card>
+  </div>
+  <div class="content">
+    <mat-form-field style="margin-top: 50px" class="w-95">
+      <mat-label>API Key</mat-label>
+      <input
+        [(ngModel)]="selectedProvider().apiKey"
+        (ngModelChange)="publishChange()"
+        matInput
+      />
+    </mat-form-field>
+    <mat-form-field
+      class="w-95"
+      *ngIf="selectedProvider().chatModels.length > 0"
+    >
+      <mat-label>Preferred Model</mat-label>
+      <mat-select
+        (ngModelChange)="publishChange()"
+        [(ngModel)]="selectedProvider().preferredChatModel"
+      >
+        <mat-option
+          *ngFor="let modelName of selectedProvider().chatModels"
+          [value]="modelName"
+          >{{ modelName }}</mat-option
+        >
+      </mat-select>
+    </mat-form-field>
+    <ng-container *ngIf="selectedProvider().chatModels.length > 0">
+
+      <h4 style="margin-top: 30px;">Available models:</h4>
+      <mat-chip-set aria-label="Model">
+        <mat-chip *ngFor="let m of selectedProvider().chatModels"
+          >{{ m }}
+          <button mat-button (click)="removeModelFromProvider(m)">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
+      </mat-chip-set>
+      <mat-form-field class="w-95">
+        <mat-label>Add Model</mat-label>
+        <input
+          (keydown)="addModelKeyDown($event)"
+          [(ngModel)]="newModel"
+          matInput
+        />
+      </mat-form-field>
+
+    </ng-container>
+    <mat-form-field style="margin-top: 50px">
+      <mat-label>Max tokens</mat-label>
+      <input
+        type="number"
+        [(ngModel)]="selectedProvider().maxTokens"
+        (ngModelChange)="publishChange()"
+        matInput
+      />
+    </mat-form-field>
+    <mat-list role="list">
+      <mat-list-item
+        *ngIf="selectedProvider().chatModels.length > 0"
+        role="listitem"
+      >
+        {{ selectedProvider().provider }} can be used in this application to
+        analye transcripts to create summaries, study guides, etc. If set as
+        your prefered model, you will need an API key
+      </mat-list-item>
+      <mat-list-item *ngIf="selectedProvider().liveTranscribe" role="listitem">
+        {{ selectedProvider().provider }} can be used for live transcription. To
+        use this feature in the app, you will need an API key.
+      </mat-list-item>
+      <mat-list-item *ngIf="selectedProvider().transcribe" role="listitem">
+        {{ selectedProvider().provider }} can be used for transcriptions of
+        audio recordings. To use this feature in the app, you will need an API
+        key.
+      </mat-list-item>
+    </mat-list>
+
+  </div>
+</div>

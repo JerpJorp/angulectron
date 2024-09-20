@@ -124,14 +124,24 @@ export class SharedHandler {
     if (bitRateK < 0) {
       bitRateK = 24;
     }
+
     const outfile = `${this.dataStore.getUserDataPath()}\\${Utilities.formattedNow()}_compressed.mp3`;
-    const cmd = `${this.binDir()}\\ffmpeg -i "${uncompressedFilePath}" -b:a ${bitRateK}k -map a ${outfile}`
+    const cmd = `${this.binDir()}\\ffmpeg -i "${uncompressedFilePath}" -b:a ${bitRateK}k -map a "${outfile}"`
+
+    this.log({
+      level: 'info',
+      message:  `executing compressAudio command: ${cmd}`
+    });
     return new Promise((resolve, reject) => {
       exec(cmd, (err) => {
         if (err) {
+          this.log({
+            level: 'important',
+            message:  `compress audio error: ${err}`
+          });
           // eslint-disable-next-line prefer-promise-reject-errors
           reject(`Failed to compress the file: ${err}`);
-        }
+        }1
         resolve(outfile);
       });
     });

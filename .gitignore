@@ -7,7 +7,8 @@
 /bazel-out
 /packages
 /electron-js
-/public/bin
+/public/bin/*.exe
+/public/bin/*.dlls
 /installer-scripts/Output
 # Node
 /node_modules

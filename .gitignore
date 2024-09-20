@@ -8,7 +8,7 @@
 /packages
 /electron-js
 /public/bin/*.exe
-/public/bin/*.dlls
+/public/bin/*.dll
 /installer-scripts/Output
 # Node
 /node_modules

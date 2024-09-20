@@ -208,22 +208,40 @@ export class SessionComponent {
         reader.onload = async () => {
           this.electronRenderService
             .SaveAudio(reader.result as ArrayBuffer)
-            .subscribe((fileName) => {
+            .subscribe((info) => {
               this._snackBar.open(
-                `File saved as ${fileName}`,
+                `File saved as ${info.file}`,
                 undefined, { duration: 800 }
-              )
-              const instance =
-                this.transcriptInstance() || TranscriptInstance.Factory();
-              if (instance.file) {
-                instance.history.push({
-                  message: 'new file',
-                  value: instance.file,
+              );
+              this.electronRenderService
+                .CompressAudio(info.file, 24)
+                .subscribe((compressed) => {
+                  this._snackBar.open(
+                    `File compressed as ${info.file}`,
+                    undefined, { duration: 800 }
+                  );
+                  const instance =
+                    this.transcriptInstance() || TranscriptInstance.Factory();
+                  instance.history.push({
+                    message: 'new uncompressed recording',
+                    value: info.file,
+                  });
+                  instance.history.push({
+                    message: 'new compressed recording',
+                    value: compressed,
+                  })
+                  if (instance.file) {
+                    instance.history.push({
+                      message: 'new file',
+                      value: instance.file,
+                    });
+                  }
+                  instance.file = compressed;
+                  this.transcriptInstance.set(instance);
+                  audioChunks.splice(0, audioChunks.length);
                 });
-              }
-              instance.file = fileName;
-              this.transcriptInstance.set(instance);
-              audioChunks.splice(0, audioChunks.length);
+
+
             });
         };
         reader.readAsArrayBuffer(audioBlob);

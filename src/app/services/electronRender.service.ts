@@ -181,10 +181,15 @@ export class ElectronRenderService {
     return  this.StoreSet(Utilities.INSTANCE_CONFIG, instance.id, instance);
   }
 
-  SaveAudio(arrayBuffer: ArrayBuffer): Observable<string> {
+  SaveAudio(arrayBuffer: ArrayBuffer): Observable<{file: string, sizeMB: number}> {
     return from(this.ipcRenderer.invoke('save-audio', arrayBuffer));
 
   }
+
+  CompressAudio(uncompressedFilePath: string, bitRateK: number): Observable<string> {
+    return from(this.ipcRenderer.invoke('compress-audio', uncompressedFilePath, bitRateK));
+  }
+
   StoreGetKeys(store: string): Observable<string[]> {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return from(this.ipcRenderer.invoke('store-keys', store));

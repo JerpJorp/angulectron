@@ -1,10 +1,20 @@
-<mat-form-field class="w-95">
+<button
+*ngIf="dirty && !pending"
+mat-fab
+extended
+style="position: absolute; right: 80px; z-index: 1;"
+(click)="saveInstance()"
+>
+Save
+</button>
+<mat-form-field class="w-70">
   <mat-label>Name</mat-label>
   <input
     [(ngModel)]="instance.name"
     (ngModelChange)="publishChanges()"
     matInput
   />
+
 </mat-form-field>
 <mat-form-field class="w-95">
   <mat-label>Date</mat-label>
@@ -38,7 +48,7 @@
   </button>
 </div>
 <div class="w-95" style="overflow: hidden">
-    <app-tags-select [tagThing]="instance" (changed)="this.dirty = true"></app-tags-select>
+    <app-tags-select [tagThing]="instance" (changed)="dirty$.next()"></app-tags-select>
 </div>
 
 
@@ -85,7 +95,7 @@
     <textarea
       rows="5"
       [(ngModel)]="instance.note"
-      (ngModelChange)="publishChanges()"
+      (ngModelChange)="publishChanges(false)"
       matInput
     ></textarea>
   </mat-form-field>
@@ -96,7 +106,7 @@
       <textarea
         rows="15"
         [(ngModel)]="instance.transcript"
-        (ngModelChange)="publishChanges()"
+        (ngModelChange)="publishChanges(false)"
         matInput
       ></textarea>
     </mat-form-field>
@@ -118,7 +128,7 @@
       <textarea
         rows="15"
         [(ngModel)]="interactions[view]"
-        (ngModelChange)="publishChanges()"
+        (ngModelChange)="publishChanges(false)"
         matInput
       ></textarea>
     </mat-form-field>
@@ -136,15 +146,6 @@
   ></markdown>
 </div>
 
-<button
-  *ngIf="dirty && !pending"
-  class="list-child"
-  mat-fab
-  extended
-  (click)="saveInstance()"
->
-  Save
-</button>
 <button
   *ngIf="!deleteAreYouSure && !pending"
   class="list-child"

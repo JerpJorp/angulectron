@@ -24,6 +24,13 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   overflow: auto;
 }
 
+.w-70 {
+  margin-left: 2.5% !important;
+  width: 70%;
+  display: block;
+  overflow: auto;
+}
+
 .field {
   display: flex;
   align-items: stretch;

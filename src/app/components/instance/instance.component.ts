@@ -3,7 +3,7 @@ import { Component, EventEmitter, inject, Input, OnChanges, OnDestroy, Output, S
 import { NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import { Subscription } from 'rxjs';
+import { debounceTime, Observable, of, pipe, Subject, Subscription, switchMap, tap } from 'rxjs';
 
 import { MarkdownModule } from 'ngx-markdown';
 
@@ -71,10 +71,13 @@ export class InstanceComponent implements OnChanges, OnDestroy {
   invalidFile = false;
   deleteAreYouSure = false;
   newTag = '';
+  dirty$ = new Subject<void>();
 
   ref: MatSnackBarRef<TextOnlySnackBar> | undefined;
 
   constructor(private electronRenderService: ElectronRenderService) {
+
+    this.dirty$.pipe(debounceTime(1500)).subscribe(() => this.saveInstance());
 
     this.electronRenderService.GetSettings().subscribe((s) => {
       this.settings = s;
@@ -104,6 +107,7 @@ export class InstanceComponent implements OnChanges, OnDestroy {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['instance'] && this.intialized) {
+      this.dirty = false;
       this.buildInteractions();
       this.setMarkDownText();
     }
@@ -162,7 +166,7 @@ export class InstanceComponent implements OnChanges, OnDestroy {
   removeTag(tag: string) {
     this.instance.tags = this.instance.tags.filter(x => x !== tag);
     this.filterTags();
-    this.dirty = true;
+    this.dirty$.next();
   }
 
   addTagKeyDown(event: KeyboardEvent) {
@@ -170,7 +174,7 @@ export class InstanceComponent implements OnChanges, OnDestroy {
       this.instance.tags.push(this.newTag.toLocaleUpperCase());
       this.newTag = '';
       this.filterTags();
-      this.dirty = true;
+      this.dirty$.next();
     }
   }
 
@@ -225,8 +229,11 @@ export class InstanceComponent implements OnChanges, OnDestroy {
     }
   }
 
-  publishChanges() {
+  publishChanges(timer = true) {
     this.dirty = true;
+    if (timer) {
+      this.dirty$.next();
+    }
   }
 
   saveInstance() {
@@ -270,18 +277,29 @@ export class InstanceComponent implements OnChanges, OnDestroy {
       if (!exists) {
         this._snackBar.open(`unable to transcribe file ${file} as it does not exist.`);
       } else {
-        this.electronRenderService.Transcribe(this.instance, file).subscribe((response) => {
-          if (response.error) {
-            this._snackBar.open(`ERROR: ${response.error}`)
-           } else {
-            if (this.instance.id === instance.id) {
-              this.dirty = true;
-              this.saveInstance();
-              if (this.view === 'transcript') {
-                this.changeView();
+
+        const obs$: Observable<string> = file.endsWith('_compressed.mp3') ?
+          of(file) :
+          of(this._snackBar.open(`Compressing audio.  Long audio files may take a while`, 'OK',  {duration: 3000})).pipe(switchMap(() => {
+            return this.electronRenderService.CompressAudio(file, 24).pipe(tap((compressed) => {
+              this.instance.file = compressed;
+              this.dirty$.next();
+            }));
+          }));
+
+        obs$.subscribe((file) => {
+          this.electronRenderService.Transcribe(this.instance, file).subscribe((response) => {
+            if (response.error) {
+              this._snackBar.open(`ERROR: ${response.error}`)
+            } else {
+              if (this.instance.id === instance.id) {
+                this.dirty$.next();
+                if (this.view === 'transcript') {
+                  this.changeView();
+                }
               }
             }
-           }
+          });
         })
       }
     })

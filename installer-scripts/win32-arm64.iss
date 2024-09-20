@@ -5,7 +5,7 @@
 #define MyAppVersion "1.0"
 #define MyAppPublisher "Bixbite"
 #define MyAppURL "https://www.example.com/"
-#define MyAppExeName "lecture-model-1.0.1.exe"
+#define MyAppExeName "lecture-model-1.0.2.exe"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
@@ -31,7 +31,7 @@ DisableProgramGroupPage=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
 OutputBaseFilename=lecture-model-win32-arm64-setup
-SetupIconFile=C:\git\angulectron\packages\lecture-model-1.0.1-win32-arm64\resources\app\favicon.ico
+SetupIconFile=C:\git\lecture-model\packages\lecture-model-1.0.2-win32-arm64\resources\app\favicon.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
@@ -43,8 +43,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\git\angulectron\packages\lecture-model-1.0.1-win32-arm64\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\git\angulectron\packages\lecture-model-1.0.1-win32-arm64\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\git\lecture-model\packages\lecture-model-1.0.2-win32-arm64\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\git\lecture-model\packages\lecture-model-1.0.2-win32-arm64\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

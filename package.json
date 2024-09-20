@@ -1,6 +1,6 @@
 {
   "name": "lecture-model",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "scripts": {
     "electron-compile": "tsc -p tsconfig.electron.json",
     "electron": "npm run electron-compile && wait-on tcp:4200 && electron ./electron-js/electron.dev",

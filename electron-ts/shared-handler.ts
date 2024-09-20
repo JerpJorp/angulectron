@@ -1,6 +1,7 @@
 import { BrowserWindow, dialog, ipcMain, IpcMainInvokeEvent, shell } from 'electron';
 import SimpleElectronStore from './simple-electron-store';
 import * as fs from 'fs';
+import { exec } from 'child_process';
 import { ISettings, Utilities } from './utility-classes';
 import axios, {AxiosRequestConfig, RawAxiosRequestHeaders} from 'axios';
 
@@ -17,7 +18,12 @@ export class SharedHandler {
     this.dataStore = new SimpleElectronStore();
     ipcMain.handle('store-get', (undefined, store: string, key: string) => this.dataStore.get(store, key) );
     ipcMain.handle('store-set', (undefined, store: string, key: string, value: any) => this.dataStore.set(store, key, value) );
-    ipcMain.handle('save-audio', async (event, arrayBuffer): Promise<string> => this.saveAudio(arrayBuffer));
+    ipcMain.handle('save-audio', async (event, arrayBuffer): Promise<{file: string, sizeMB: number}> => this.saveAudio(arrayBuffer));
+
+    ipcMain.handle('compress-audio',
+      async (event, uncompressedFilePath: string, bitRateK: number): Promise<string> =>
+        this.compressAudio(uncompressedFilePath, bitRateK));
+
     ipcMain.handle('store-delete', (undefined, store: string, key: string) => this.dataStore.delete(store, key) );
     ipcMain.handle('data-path', () => this.dataStore.getUserDataPath() );
     ipcMain.handle('store-keys', (undefined, store: string) => this.dataStore.keys(store) );
@@ -114,7 +120,24 @@ export class SharedHandler {
     this.dataStore.sessionLog(['----', `ERROR: ${msg}`,'----']);
   }
 
-  async saveAudio(arrayBuffer: ArrayBuffer): Promise<string> {
+  async compressAudio(uncompressedFilePath: string, bitRateK: number): Promise<string> {
+    if (bitRateK < 0) {
+      bitRateK = 24;
+    }
+    const outfile = `${this.dataStore.getUserDataPath()}\\${Utilities.formattedNow()}_compressed.mp3`;
+    const cmd = `${this.binDir()}\\ffmpeg -i "${uncompressedFilePath}" -b:a ${bitRateK}k -map a ${outfile}`
+    return new Promise((resolve, reject) => {
+      exec(cmd, (err) => {
+        if (err) {
+          // eslint-disable-next-line prefer-promise-reject-errors
+          reject(`Failed to compress the file: ${err}`);
+        }
+        resolve(outfile);
+      });
+    });
+  }
+
+  async saveAudio(arrayBuffer: ArrayBuffer): Promise<{file: string, sizeMB: number}> {
     const { canceled, filePath } = await dialog.showSaveDialog({
       filters: [{ name: 'Audio Files', extensions: ['mp3'] }],
       defaultPath: `recording_${Utilities.formattedNow()}.mp3`,
@@ -128,11 +151,15 @@ export class SharedHandler {
             // eslint-disable-next-line prefer-promise-reject-errors
             reject(`Failed to save the file: ${err}`);
           }
-          resolve(filePath);
+          const stats = fs.statSync(filePath)
+          const fileSizeInBytes = stats.size;
+          // Convert the file size to megabytes (optional)
+          const mb = fileSizeInBytes / (1024*1024);
+          resolve({ file: filePath, sizeMB: mb });
         });
       });
     } else {
-      return '';
+      return { file: '', sizeMB: 0 };
     }
   }
 

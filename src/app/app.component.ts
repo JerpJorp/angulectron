@@ -28,9 +28,4 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 })
 export class AppComponent {
   title = 'Lecture Model';
-  constructor(private electronRenderService: ElectronRenderService) {
-    this.electronRenderService.Models().subscribe((x) => {
-      console.log(JSON.stringify(x));
-    })
-  }
 }

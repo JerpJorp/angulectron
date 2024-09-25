@@ -33,6 +33,8 @@ export class Utilities {
   static ANTHROPIC = 'Anthropic';
   static PERPLEXITY = 'Perplexity';
   static OPENAI = 'OpenAI'
+  static GEMINI = 'Gemini';
+
   static DefaultSettings(): ISettings {
     return {
       defaultChatProvider: 'OpenAI',
@@ -54,6 +56,20 @@ export class Utilities {
         },
       ],
       AIConfigs: [
+        {
+          "provider": "Gemini",
+          "apiKey": "",
+          "chatModels": [
+            "gemini-1.5-pro-latest",
+            "gemini-1.5-flash-latest"
+          ],
+          "preferredChatModel": "gemini-1.5-pro-latest",
+          "transcribeProvider": "gemini-1.5-flash-latest",
+          "transcribe": true,
+          "liveTranscribe": false,
+          "currentSearch": false,
+          "maxTokens": 4096
+        },
         {
           provider: this.OPENAI,
           apiKey: '',
@@ -150,5 +166,6 @@ export interface IAIConfig {
   preferredChatModel: string;
   liveTranscribe: boolean;
   transcribe: boolean;
+  transcribeProvider?: string;
   currentSearch: boolean;
 }

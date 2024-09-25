@@ -135,9 +135,9 @@ export class ElectronRenderService {
     return from(this.ipcRenderer.invoke('llm-request', messageStack, llm, model));
   }
 
-  Models(llm?: IAIConfig): Observable<{models: string, error: any}>  {
-    return from(this.ipcRenderer.invoke('models', llm))
-  }
+  // Models(llm?: IAIConfig): Observable<{models: string, error: any}>  {
+  //   return from(this.ipcRenderer.invoke('models', llm))
+  // }
 
   GetInstance(instance: TranscriptInstance): Observable<TranscriptInstance | undefined> {
     const obs$ = from(this.StoreGet(Utilities.INSTANCE_CONFIG, instance.id));

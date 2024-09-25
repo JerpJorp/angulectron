@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain } from "electron";
+import { BrowserWindow, ipcMain, utilityProcess } from "electron";
 import * as fs from 'fs';
 
 import axios, {AxiosRequestConfig, RawAxiosRequestHeaders} from 'axios';
@@ -6,6 +6,8 @@ import { Subject } from "rxjs";
 import OpenAI from 'openai';
 import Groq from 'groq-sdk';
 import Anthropic from '@anthropic-ai/sdk';
+import { GoogleAIFileManager, FileState } from "@google/generative-ai/server";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 import { IAIConfig, ISettings, Utilities } from "./utility-classes";
 
@@ -48,10 +50,10 @@ export class ModelEngine {
       'llm-request',
       async (undefined, messageStack: IGenericMessage[], llm?: IAIConfig, model?: string): Promise<IChatServiceResponse> =>
           this.llmRequest(messageStack, llm, model));
-    ipcMain.handle(
-      'models',
-      async (undefined, llm?: IAIConfig): Promise<{models: string[]; error?: any}> =>
-          this.models(llm));
+    // ipcMain.handle(
+    //   'models',
+    //   async (undefined, llm?: IAIConfig): Promise<{models: string[]; error?: any}> =>
+    //       this.models(llm));
   }
 
   addPendingRequest(id: string, message: string) {
@@ -82,7 +84,9 @@ export class ModelEngine {
       if (this.valid(llm)) {
         const reply = llm!.provider == Utilities.OPENAI ?
           await this.openAiTranscribe(audioFilePath, llm!.apiKey) :
-          await this.groqTranscribe(audioFilePath, llm!.apiKey);
+          llm!.provider == Utilities.GEMINI ?
+            await this.geminiTranscribe(audioFilePath, llm!) :
+            await this.groqTranscribe(audioFilePath, llm!.apiKey);
         return reply;
       } else {
         return ModelEngine.err('Cannot transcribe: invalid transcription AI provider');
@@ -92,6 +96,83 @@ export class ModelEngine {
       return ModelEngine.err(error);
     } finally {
       this.removePendingRequest(id);
+    }
+  }
+
+  async geminiTranscribe(audioFile: string, aiConfig: IAIConfig): Promise<IChatServiceResponse> {
+    try {
+      const fileManager = new GoogleAIFileManager(aiConfig.apiKey);
+
+      this.log$.next(
+        {
+          level: 'important',
+          message: `google file upload: LLM=${audioFile}`,
+        });
+
+      const uploadResult = await fileManager.uploadFile(
+        audioFile,
+        {
+          mimeType: "audio/mp3",
+          displayName: "Audio sample",
+        },
+      );
+
+      let file = await fileManager.getFile(uploadResult.file.name);
+      while (file.state === FileState.PROCESSING) {
+        this.log$.next(
+          {
+            level: 'info',
+            message: `google file upload: pending `,
+          });
+
+        // Sleep for 10 seconds
+        await new Promise((resolve) => setTimeout(resolve, 4000));
+        // Fetch the file from the API again
+        file = await fileManager.getFile(uploadResult.file.name);
+      }
+
+      this.log$.next(
+        {
+          level: 'info',
+          message: `google file upload finished: status = ${file.state}`,
+        });
+
+      if (file.state === FileState.FAILED) {
+        throw new Error("Audio processing failed.");
+      }
+
+      this.log$.next(
+        {
+          level: 'info',
+          message: `Uploaded file ${uploadResult.file.displayName} as: ${uploadResult.file.uri}`,
+        });
+
+      const genAI = new GoogleGenerativeAI(aiConfig.apiKey);
+      const modelName = aiConfig.transcribeProvider && aiConfig.transcribeProvider.length > 0 ?
+        aiConfig.transcribeProvider :
+        aiConfig.preferredChatModel;
+
+      const model = genAI.getGenerativeModel({ model: modelName });
+
+      this.log$.next(
+        {
+          level: 'info',
+          message: `google file transcribe request to model ${modelName}`,
+        });
+
+      const result = await model.generateContent([
+        "transcribe this audio file recording.",
+        {
+          fileData: {
+            fileUri: uploadResult.file.uri,
+            mimeType: uploadResult.file.mimeType,
+          },
+        },
+      ]);
+
+      return ModelEngine.success(result.response.text());
+    } catch (error) {
+      return ModelEngine.err(error);
     }
   }
 
@@ -139,50 +220,53 @@ export class ModelEngine {
     return this.llmRequest(messageStack);
 }
 
-  async models(maybeLlm?: IAIConfig) : Promise<{ models: string[]; error?: any; }> {
+  // async models(maybeLlm?: IAIConfig) : Promise<{ models: string[]; error?: any; }> {
 
-      const settings = this.getSettings()
-      const provider = settings.defaultChatProvider;
+  //     const settings = this.getSettings()
+  //     const provider = settings.defaultChatProvider;
 
-      const llmtoUse = maybeLlm || settings.AIConfigs.find((llm) => llm.provider === provider);
-      const llm = llmtoUse!;
-      this.log$.next(
-        {
-          level: 'important',
-          message: `models request: LLM=${llm?.provider} `,
-        });
+  //     const llmtoUse = maybeLlm || settings.AIConfigs.find((llm) => llm.provider === provider);
+  //     const llm = llmtoUse!;
+  //     this.log$.next(
+  //       {
+  //         level: 'important',
+  //         message: `models request: LLM=${llm?.provider}`,
+  //       });
 
-        let reply: any = {};
-        if (llm.provider == Utilities.ANTHROPIC) {
-          const anthropic = new Anthropic({
-            apiKey: llm.apiKey,
-            dangerouslyAllowBrowser: true,
-          });
-          reply = await anthropic.get('models');
+  //       let reply: any = {};
+  //       if (llm.provider == Utilities.ANTHROPIC) {
+  //         const anthropic = new Anthropic({
+  //           apiKey: llm.apiKey,
+  //           dangerouslyAllowBrowser: true,c
+  //         });
+  //         reply = await anthropic.get('models');
 
-        } else if (llm.provider == Utilities.PERPLEXITY) {
-          const instance = new OpenAI({ baseURL: 'https://api.perplexity.ai/chat', apiKey:  llm.apiKey, dangerouslyAllowBrowser: true });
-          reply = await instance.models.list();
-        } else {
-          const instance = llm.openAiBaseURL ?
-            new OpenAI({ baseURL: llm.openAiBaseURL, apiKey:  llm.apiKey, dangerouslyAllowBrowser: true }) :
-            new OpenAI({ apiKey:  llm.apiKey, dangerouslyAllowBrowser: true });
-          reply = await instance.models.list();
-        }
+  //       } else if (llm.provider == Utilities.PERPLEXITY) {
+  //         const instance = new OpenAI({ baseURL: 'https://api.perplexity.ai/chat', apiKey:  llm.apiKey, dangerouslyAllowBrowser: true });
+  //         reply = await instance.models.list();
+  //       } else if (llm.provider == Utilities.GEMINI) {
+  //         const instance = new OpenAI({ baseURL: 'https://api.perplexity.ai/chat', apiKey:  llm.apiKey, dangerouslyAllowBrowser: true });
+  //         reply = await instance.models.list();
+  //       } else {
+  //         const instance = llm.openAiBaseURL ?
+  //           new OpenAI({ baseURL: llm.openAiBaseURL, apiKey:  llm.apiKey, dangerouslyAllowBrowser: true }) :
+  //           new OpenAI({ apiKey:  llm.apiKey, dangerouslyAllowBrowser: true });
+  //         reply = await instance.models.list();
+  //       }
 
 
 
-      this.log$.next(
-        {
-          level: 'important',
-          message: `models reply: ${JSON.stringify(reply.data)}`,
-        });
+  //     this.log$.next(
+  //       {
+  //         level: 'important',
+  //         message: `models reply: ${JSON.stringify(reply.data)}`,
+  //       });
 
-      return {
-        models: [],
-        error: undefined,
-      }
-  }
+  //     return {
+  //       models: [],
+  //       error: undefined,
+  //     }
+  // }
 
   async llmRequest(messageStack: IGenericMessage[], maybeLlm?: IAIConfig, model?: string ): Promise<IChatServiceResponse> {
 
@@ -219,6 +303,11 @@ export class ModelEngine {
           } else if (llmToUse!.provider == Utilities.PERPLEXITY) {
             if (modelToUse !== undefined) {
               const response = await this.perplexityRequest(messageStack, llmToUse!, modelToUse);
+              return response;
+            }
+          } else if (llmToUse!.provider === Utilities.GEMINI) {
+            if (modelToUse !== undefined) {
+              const response = await this.geminiRequest(messageStack, llmToUse!, modelToUse);
               return response;
             }
           }
@@ -368,6 +457,44 @@ export class ModelEngine {
         return ModelEngine.err(error);
       } finally {
         this.removePendingRequest(id);
+      }
+  }
+
+  async geminiRequest(messageStack: IGenericMessage[], llm: IAIConfig, modelName: string): Promise<IChatServiceResponse> {
+
+      const systemMessage = messageStack.find((x) => x.role === 'system');
+      const messageStackFiltered = messageStack.filter((x) => x.role !== 'system');
+      const last = messageStackFiltered.length -1;
+      if (messageStackFiltered[last].role === 'user') {
+        const id = Utilities.formattedNow();
+        this.addPendingRequest(id, `${llm.provider} request`);
+        try {
+          const userMessage = messageStackFiltered.pop();
+          const genAI = new GoogleGenerativeAI(llm.apiKey);
+          const model = genAI.getGenerativeModel({ model: modelName, systemInstruction: systemMessage ? systemMessage.content : undefined});
+
+          const chat = model.startChat({
+            history: messageStackFiltered.map((X) =>
+              ({ role: X.role == 'assistant' ? 'model' : 'user', parts: [{ text: X.content }] }))
+          });
+          let result = await chat.sendMessage(userMessage!.content);
+          const reply = result.response.text();
+          this.log$.next({
+            level: 'info',
+            message: `gemini llm response received`
+          });
+          this.log$.next({
+            level: 'trace',
+            message: JSON.stringify(reply, null, 2),
+          });
+          return ModelEngine.success(reply);
+        } catch(error) {
+          return ModelEngine.err(error);
+        } finally {
+          this.removePendingRequest(id);
+        }
+      } else {
+        return ModelEngine.err('no user message to send to gemini LLM provider as last message in the stack. Yell at Kelley.');
       }
   }
 
